@@ -1,0 +1,1024 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Batch 20 — Farm Log</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Zilla+Slab:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --paper: #F1ECDF;
+    --card: #FFFFFF;
+    --ink: #2A2419;
+    --ink-soft: #746C5C;
+    --line: #DCD3BE;
+    --barn: #7A3524;
+    --barn-bg: #F5E2DA;
+    --moss: #47552F;
+    --moss-bg: #E7ECDA;
+    --straw: #B9832A;
+    --straw-bg: #F6E9CE;
+    --slate: #3E5A66;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: 'Inter', sans-serif;
+    padding: 2.5rem 1.5rem 4rem;
+  }
+  .wrap { max-width: 1020px; margin: 0 auto; }
+
+  header { display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.5rem; border-bottom: 2px solid var(--ink); padding-bottom: 1rem; }
+  header h1 { font-family: 'Zilla Slab', serif; font-weight: 700; font-size: 30px; margin: 0 0 4px; letter-spacing: -0.01em; }
+  header .sub { font-size: 13px; color: var(--ink-soft); text-transform: uppercase; letter-spacing: 0.06em; }
+  header .meta { text-align: right; font-size: 13px; color: var(--ink-soft); line-height: 1.6; }
+  header .meta b { color: var(--ink); font-weight: 600; }
+  header .meta-row { display: flex; align-items: center; gap: 10px; }
+  #print-btn { padding: 8px 14px; font-size: 12px; }
+
+  .tabs { display: flex; gap: 4px; margin-bottom: 1.75rem; border-bottom: 1px solid var(--line); }
+  .tab-btn {
+    font-family: 'Zilla Slab', serif; font-weight: 600; font-size: 15px; background: none; border: none;
+    padding: 10px 18px; cursor: pointer; color: var(--ink-soft); border-bottom: 2px solid transparent; margin-bottom: -1px;
+  }
+  .tab-btn.active { color: var(--ink); border-bottom-color: var(--barn); }
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+
+  .settings-bar { display: flex; flex-wrap: wrap; gap: 18px; align-items: flex-end; margin-bottom: 1.1rem; }
+  .settings-bar .field { min-width: 150px; }
+  .settings-bar .field label { display: block; font-size: 11px; color: var(--ink-soft); margin-bottom: 5px; text-transform: uppercase; letter-spacing: 0.04em; }
+
+  .grid4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 2rem; }
+  @media (max-width: 720px) { .grid4 { grid-template-columns: repeat(2, 1fr); } }
+
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 1rem 1.1rem; }
+  .bldg-label { font-family: 'Zilla Slab', serif; font-weight: 600; font-size: 15px; margin: 0 0 10px; display: flex; align-items: center; justify-content: space-between; }
+  .bldg-label span.tag { font-size: 11px; font-weight: 500; color: var(--ink-soft); font-family: 'Inter', sans-serif; }
+
+  .silo { height: 8px; border-radius: 4px; background: var(--line); overflow: hidden; margin-bottom: 10px; }
+  .silo-fill { height: 100%; background: var(--moss); border-radius: 4px; transition: width 0.3s ease; }
+
+  .stat-row { display: flex; justify-content: space-between; font-size: 13px; padding: 3px 0; color: var(--ink-soft); }
+  .stat-row b { color: var(--ink); font-weight: 600; }
+  .stat-row.hl b { color: var(--barn); }
+
+  .overall .bldg-label { color: var(--straw); }
+  .overall .silo-fill { background: var(--straw); }
+  .feeds .bldg-label { color: var(--slate); }
+  .feeds .silo-fill { background: var(--slate); }
+
+  h2 { font-family: 'Zilla Slab', serif; font-weight: 600; font-size: 19px; margin: 0 0 1rem; }
+
+  form.entry { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem 1.4rem; margin-bottom: 2rem; }
+  .form-grid { display: grid; grid-template-columns: 140px repeat(3, 1fr); gap: 14px; margin-bottom: 12px; }
+  @media (max-width: 720px) { .form-grid { grid-template-columns: 1fr; } }
+  .field label { display: block; font-size: 12px; color: var(--ink-soft); margin-bottom: 5px; text-transform: uppercase; letter-spacing: 0.04em; }
+  .bldg-fields { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+  .bldg-fields.two { grid-template-columns: repeat(2, 1fr); }
+  .bldg-fields span { font-size: 10px; color: var(--ink-soft); text-align: center; display: block; margin-bottom: 3px; }
+  input[type=date], input[type=number], select {
+    width: 100%; height: 34px; border: 1px solid var(--line); border-radius: 6px; padding: 0 8px;
+    font-family: 'Inter', sans-serif; font-size: 13px; background: var(--paper); color: var(--ink);
+  }
+  input[type=number] { text-align: center; padding: 0 4px; }
+  input:focus, select:focus { outline: 2px solid var(--straw); outline-offset: 1px; }
+  .form-actions { display: flex; gap: 10px; justify-content: flex-end; }
+  button { font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 600; border-radius: 6px; padding: 9px 16px; cursor: pointer; border: 1px solid var(--ink); background: var(--ink); color: var(--paper); }
+  button.secondary { background: transparent; color: var(--ink); border: 1px solid var(--line); }
+  button:active { transform: scale(0.98); }
+
+  table { width: 100%; border-collapse: collapse; background: var(--card); border: 1px solid var(--line); border-radius: 10px; overflow: hidden; font-size: 12.5px; }
+  thead th { background: var(--ink); color: var(--paper); font-weight: 600; text-align: center; padding: 8px 4px; font-size: 11px; text-transform: uppercase; letter-spacing: 0.03em; }
+  thead th.left { text-align: left; padding-left: 10px; }
+  tbody td { padding: 7px 4px; text-align: center; border-top: 1px solid var(--line); }
+  tbody td.left { text-align: left; padding-left: 10px; }
+  tbody tr:hover { background: var(--paper); }
+  .bgroup-1 { border-left: 2px solid var(--barn); }
+  .bgroup-2 { border-left: 2px solid var(--moss); }
+  .bgroup-3 { border-left: 2px solid var(--straw); }
+  .bgroup-all { border-left: 2px solid var(--slate); }
+  .rowtotal { font-weight: 600; }
+  .row-actions button { padding: 4px 8px; font-size: 11px; margin: 0 2px; }
+  .row-actions button.del { background: var(--barn); border-color: var(--barn); color: #fff; }
+  .row-actions button.edit { background: transparent; color: var(--ink); border: 1px solid var(--line); }
+
+  .empty { text-align: center; padding: 2rem; color: var(--ink-soft); font-size: 13px; }
+  .status { font-size: 12px; color: var(--ink-soft); margin-top: 8px; min-height: 16px; }
+
+  .summary-sheet { background: #FCE96A; border: 1px solid #E0C233; border-radius: 10px; padding: 1.5rem 1.75rem; }
+  .summary-title { font-family: 'Zilla Slab', serif; font-weight: 700; font-size: 17px; margin-bottom: 1.1rem; letter-spacing: 0.01em; }
+  .summary-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0 32px; }
+  @media (max-width: 640px) { .summary-grid { grid-template-columns: 1fr; } }
+  .summary-col { display: flex; flex-direction: column; }
+  .summary-row { display: flex; justify-content: space-between; gap: 12px; padding: 8px 0; border-bottom: 1px solid rgba(42,36,25,0.15); font-size: 13.5px; }
+  .summary-row b { font-weight: 700; }
+
+  body.locked form.entry, body.locked .row-actions, body.locked .no-print { display: none !important; }
+  body.locked .settings-bar input { pointer-events: none; background: #eee; opacity: 0.7; }
+  #lock-btn { padding: 8px 14px; font-size: 12px; margin-right: 8px; }
+  .inline-edit { border: none; border-bottom: 1px dashed var(--ink-soft); background: transparent; font: inherit; font-weight: 700; padding: 0 2px; }
+  .inline-edit:focus { outline: none; border-bottom-color: var(--barn); }
+  body.locked .inline-edit { pointer-events: none; border-bottom-color: transparent; }
+
+  @media print {
+    .tabs, form.entry, #print-btn, .settings-bar { display: none !important; }
+    .tab-panel { display: block !important; margin-bottom: 2rem; page-break-inside: avoid; }
+    .row-actions, .no-print { display: none !important; }
+    body { padding: 0.5rem; background: #fff; }
+    .card { break-inside: avoid; border: 1px solid #ccc; }
+    h2 { break-before: auto; margin-top: 1.5rem; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div>
+      <div class="sub">Chicmann Farms Inc — Foster</div>
+      <h1>Farm log</h1>
+    </div>
+    <div class="meta">
+      <div class="meta-row" style="justify-content:flex-end;">
+        <div>
+          <div><b>Batch <input type="text" class="inline-edit" data-setting="batchNumber" style="width:36px;"></b> · Grow #<input type="text" class="inline-edit" data-setting="growNumber" style="width:24px;">, <input type="text" class="inline-edit" data-setting="growYear" style="width:48px;"></div>
+          <div>Breed: Cobb 500</div>
+        </div>
+        <button type="button" id="lock-btn" class="secondary">🔒 Unlock editing</button>
+        <button type="button" id="print-btn" class="secondary">🖨 Print / save report</button>
+      </div>
+    </div>
+  </header>
+
+  <div class="tabs">
+    <button class="tab-btn active" data-tab="mortality">Mortality</button>
+    <button class="tab-btn" data-tab="feeds">Feeds</button>
+    <button class="tab-btn" data-tab="alw">ALW</button>
+    <button class="tab-btn" data-tab="harvest">Harvest</button>
+    <button class="tab-btn" data-tab="summary">Summary</button>
+  </div>
+
+  <!-- MORTALITY TAB -->
+  <div class="tab-panel active" id="panel-mortality">
+    <div class="settings-bar">
+      <div class="field"><label>Chick-in date</label><input type="date" data-setting="chickInDate"></div>
+      <div class="field"><label>Beginning inv. B1</label><input type="number" min="0" data-setting="beginB1"></div>
+      <div class="field"><label>Beginning inv. B2</label><input type="number" min="0" data-setting="beginB2"></div>
+      <div class="field"><label>Beginning inv. B3</label><input type="number" min="0" data-setting="beginB3"></div>
+      <div class="field"><label>Total beginning inv.</label><div id="m-begin-total" style="height:34px;display:flex;align-items:center;font-weight:600;">0</div></div>
+    </div>
+    <div class="grid4" id="mort-stats-grid"></div>
+
+    <h2>Add a day's count</h2>
+    <form class="entry" id="mort-form">
+      <div class="form-grid">
+        <div class="field">
+          <label for="m-date">Date</label>
+          <input type="date" id="m-date" required>
+        </div>
+        <div class="field">
+          <label>Building 1</label>
+          <div class="bldg-fields">
+            <div><span>AM</span><input type="number" min="0" id="m-b1-am" value="0"></div>
+            <div><span>PM</span><input type="number" min="0" id="m-b1-pm" value="0"></div>
+            <div><span>Condemn</span><input type="number" min="0" id="m-b1-cond" value="0"></div>
+          </div>
+        </div>
+        <div class="field">
+          <label>Building 2</label>
+          <div class="bldg-fields">
+            <div><span>AM</span><input type="number" min="0" id="m-b2-am" value="0"></div>
+            <div><span>PM</span><input type="number" min="0" id="m-b2-pm" value="0"></div>
+            <div><span>Condemn</span><input type="number" min="0" id="m-b2-cond" value="0"></div>
+          </div>
+        </div>
+        <div class="field">
+          <label>Building 3</label>
+          <div class="bldg-fields">
+            <div><span>AM</span><input type="number" min="0" id="m-b3-am" value="0"></div>
+            <div><span>PM</span><input type="number" min="0" id="m-b3-pm" value="0"></div>
+            <div><span>Condemn</span><input type="number" min="0" id="m-b3-cond" value="0"></div>
+          </div>
+        </div>
+      </div>
+      <div class="form-actions">
+        <button type="button" class="secondary" id="m-cancel" style="display:none;">Cancel edit</button>
+        <button type="submit" id="m-submit">Add entry</button>
+      </div>
+      <div class="status" id="m-status"></div>
+    </form>
+
+    <h2>Daily entries</h2>
+    <div style="overflow-x:auto;">
+      <table>
+        <thead>
+          <tr>
+            <th class="left">Date</th><th>Day</th>
+            <th class="bgroup-1">B1 AM</th><th>B1 PM</th><th>B1 Cond.</th><th>B1 total</th>
+            <th class="bgroup-2">B2 AM</th><th>B2 PM</th><th>B2 Cond.</th><th>B2 total</th>
+            <th class="bgroup-3">B3 AM</th><th>B3 PM</th><th>B3 Cond.</th><th>B3 total</th>
+            <th>Day total</th><th class="no-print"></th>
+          </tr>
+        </thead>
+        <tbody id="mort-body"></tbody>
+      </table>
+    </div>
+    <div class="empty" id="mort-empty" style="display:none;">No entries yet. Add the first day's count above.</div>
+  </div>
+
+  <!-- FEEDS TAB -->
+  <div class="tab-panel" id="panel-feeds">
+    <div class="settings-bar">
+      <div class="field"><label>Chick-in date</label><input type="date" data-setting="chickInDate"></div>
+      <div class="field"><label>Total feeds delivered (bags)</label><input type="number" min="0" data-setting="feedsDelivered"></div>
+    </div>
+    <div class="grid4" id="feeds-stats-grid"></div>
+
+    <h2>Add a day's feed consumption</h2>
+    <form class="entry" id="feeds-form">
+      <div class="form-grid">
+        <div class="field">
+          <label for="f-date">Date</label>
+          <input type="date" id="f-date" required>
+        </div>
+        <div class="field">
+          <label>Building 1</label>
+          <div class="bldg-fields two">
+            <div><span>Bags</span><input type="number" min="0" id="f-b1-bags" value="0"></div>
+            <div><span>FCR</span><input type="number" min="0" step="0.001" id="f-b1-fcr" value="0"></div>
+          </div>
+        </div>
+        <div class="field">
+          <label>Building 2</label>
+          <div class="bldg-fields two">
+            <div><span>Bags</span><input type="number" min="0" id="f-b2-bags" value="0"></div>
+            <div><span>FCR</span><input type="number" min="0" step="0.001" id="f-b2-fcr" value="0"></div>
+          </div>
+        </div>
+        <div class="field">
+          <label>Building 3</label>
+          <div class="bldg-fields two">
+            <div><span>Bags</span><input type="number" min="0" id="f-b3-bags" value="0"></div>
+            <div><span>FCR</span><input type="number" min="0" step="0.001" id="f-b3-fcr" value="0"></div>
+          </div>
+        </div>
+      </div>
+      <div class="form-actions">
+        <button type="button" class="secondary" id="f-cancel" style="display:none;">Cancel edit</button>
+        <button type="submit" id="f-submit">Add entry</button>
+      </div>
+      <div class="status" id="f-status"></div>
+    </form>
+
+    <h2>Daily entries</h2>
+    <div style="overflow-x:auto;">
+      <table>
+        <thead>
+          <tr>
+            <th class="left">Date</th><th>Day</th>
+            <th class="bgroup-1">B1 bags</th><th>B1 FCR</th>
+            <th class="bgroup-2">B2 bags</th><th>B2 FCR</th>
+            <th class="bgroup-3">B3 bags</th><th>B3 FCR</th>
+            <th class="bgroup-all">All bags</th><th>Cum. bags</th><th class="no-print"></th>
+          </tr>
+        </thead>
+        <tbody id="feeds-body"></tbody>
+      </table>
+    </div>
+    <div class="empty" id="feeds-empty" style="display:none;">No entries yet. Add the first day's feed count above.</div>
+  </div>
+
+  <!-- ALW TAB -->
+  <div class="tab-panel" id="panel-alw">
+    <div class="settings-bar">
+      <div class="field"><label>Chick-in date</label><input type="date" data-setting="chickInDate"></div>
+    </div>
+    <div class="grid4" id="alw-stats-grid"></div>
+
+    <h2>Add a day's average live weight (grams)</h2>
+    <form class="entry" id="alw-form">
+      <div class="form-grid">
+        <div class="field">
+          <label for="a-date">Date</label>
+          <input type="date" id="a-date" required>
+        </div>
+        <div class="field">
+          <label>Building 1</label>
+          <div class="bldg-fields two">
+            <div><span>ALW</span><input type="number" min="0" step="0.01" id="a-b1" value="0"></div>
+            <div><span>Target</span><input type="number" min="0" step="0.01" id="a-b1-std" placeholder="optional"></div>
+          </div>
+        </div>
+        <div class="field">
+          <label>Building 2</label>
+          <div class="bldg-fields two">
+            <div><span>ALW</span><input type="number" min="0" step="0.01" id="a-b2" value="0"></div>
+            <div><span>Target</span><input type="number" min="0" step="0.01" id="a-b2-std" placeholder="optional"></div>
+          </div>
+        </div>
+        <div class="field">
+          <label>Building 3</label>
+          <div class="bldg-fields two">
+            <div><span>ALW</span><input type="number" min="0" step="0.01" id="a-b3" value="0"></div>
+            <div><span>Target</span><input type="number" min="0" step="0.01" id="a-b3-std" placeholder="optional"></div>
+          </div>
+        </div>
+      </div>
+      <div class="form-actions">
+        <button type="button" class="secondary" id="a-cancel" style="display:none;">Cancel edit</button>
+        <button type="submit" id="a-submit">Add entry</button>
+      </div>
+      <div class="status" id="a-status"></div>
+    </form>
+
+    <h2>Daily entries</h2>
+    <div style="overflow-x:auto;">
+      <table>
+        <thead>
+          <tr>
+            <th class="left">Date</th><th>Day</th>
+            <th class="bgroup-1">B1 ALW</th><th class="bgroup-2">B2 ALW</th><th class="bgroup-3">B3 ALW</th>
+            <th class="bgroup-all">Avg ALW</th><th>ADG</th><th>vs target</th><th class="no-print"></th>
+          </tr>
+        </thead>
+        <tbody id="alw-body"></tbody>
+      </table>
+    </div>
+    <div class="empty" id="alw-empty" style="display:none;">No entries yet. Add the first day's weight above.</div>
+  </div>
+
+  <!-- HARVEST TAB -->
+  <div class="tab-panel" id="panel-harvest">
+    <div class="settings-bar">
+      <div class="field"><label>Chick-in date</label><input type="date" data-setting="chickInDate"></div>
+      <div class="field"><label>Beginning inv. B1</label><input type="number" min="0" data-setting="beginB1"></div>
+      <div class="field"><label>Beginning inv. B2</label><input type="number" min="0" data-setting="beginB2"></div>
+      <div class="field"><label>Beginning inv. B3</label><input type="number" min="0" data-setting="beginB3"></div>
+      <div class="field"><label>Total beginning inv.</label><div id="h-begin-total" style="height:34px;display:flex;align-items:center;font-weight:600;">0</div></div>
+    </div>
+    <div class="grid4" id="harvest-stats-grid"></div>
+
+    <h2>Add a harvest pull</h2>
+    <form class="entry" id="harvest-form">
+      <div class="form-grid" style="grid-template-columns: 140px 120px repeat(2, 1fr);">
+        <div class="field">
+          <label for="h-date">Date</label>
+          <input type="date" id="h-date" required>
+        </div>
+        <div class="field">
+          <label for="h-bldg">Building</label>
+          <select id="h-bldg">
+            <option value="1">Building 1</option>
+            <option value="2">Building 2</option>
+            <option value="3">Building 3</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="h-kilos">Kilos</label>
+          <input type="number" min="0" step="0.1" id="h-kilos" value="0">
+        </div>
+        <div class="field">
+          <label for="h-heads">Heads</label>
+          <input type="number" min="0" id="h-heads" value="0">
+        </div>
+      </div>
+      <div class="form-actions">
+        <button type="button" class="secondary" id="h-cancel" style="display:none;">Cancel edit</button>
+        <button type="submit" id="h-submit">Add entry</button>
+      </div>
+      <div class="status" id="h-status"></div>
+    </form>
+
+    <h2>Harvest entries</h2>
+    <div style="overflow-x:auto;">
+      <table>
+        <thead>
+          <tr>
+            <th class="left">Date</th><th>Day</th><th>Building</th><th>Kilos</th><th>Heads</th><th>ALW (g)</th><th class="no-print"></th>
+          </tr>
+        </thead>
+        <tbody id="harvest-body"></tbody>
+      </table>
+    </div>
+    <div class="empty" id="harvest-empty" style="display:none;">No harvest pulls recorded yet.</div>
+  </div>
+
+  <!-- SUMMARY TAB -->
+  <div class="tab-panel" id="panel-summary">
+    <div class="settings-bar">
+      <div class="field"><label>Chick-in date</label><input type="date" data-setting="chickInDate"></div>
+    </div>
+    <div class="summary-sheet">
+      <div class="summary-title">#36 Summary of computation</div>
+      <div class="summary-grid">
+        <div class="summary-col">
+          <div class="summary-row"><span>Batch:</span><b><input type="text" class="inline-edit" data-setting="batchNumber" style="width:40px;"></b></div>
+          <div class="summary-row"><span>Grow #:</span><b><input type="text" class="inline-edit" data-setting="growNumber" style="width:24px;">, <input type="text" class="inline-edit" data-setting="growYear" style="width:48px;"></b></div>
+          <div class="summary-row"><span>Beginning Inventory:</span><b id="sum-begin">0</b></div>
+          <div class="summary-row"><span>Feeds Delivered:</span><b id="sum-delivered">0</b></div>
+          <div class="summary-row"><span>Feeds Consumed:</span><b id="sum-consumed">0</b></div>
+          <div class="summary-row"><span>Remaining Feeds:</span><b id="sum-remaining-feeds">0</b></div>
+          <div class="summary-row"><span>T. Inventory:</span><b id="sum-tinventory">0</b></div>
+          <div class="summary-row"><span>T. Kilos:</span><b id="sum-tkilos">0</b></div>
+          <div class="summary-row"><span>T. Harvest (heads):</span><b id="sum-tharvest">0</b></div>
+          <div class="summary-row"><span>T. Remaining runts:</span><b id="sum-remaining-runts">0</b></div>
+          <div class="summary-row"><span>Mortality:</span><b id="sum-mortality">0</b></div>
+        </div>
+        <div class="summary-col">
+          <div class="summary-row"><span>Running HR:</span><b id="sum-hr">0%</b></div>
+          <div class="summary-row"><span>Running FCR:</span><b id="sum-fcr">—</b></div>
+          <div class="summary-row"><span>Running ALW:</span><b id="sum-alw">—</b></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const SETTINGS_KEY = 'batch-settings-batch20';
+const SETTINGS_DEFAULT = { chickInDate: '2026-07-11', beginB1: 54776, beginB2: 54860, beginB3: 54844, feedsDelivered: 2250, feedsConsumedManual: 1121, feedsFcrManual: 1.1215, batchNumber: '20', growNumber: '4', growYear: '2026' };
+let SETTINGS = { ...SETTINGS_DEFAULT };
+
+const MORT_SEED = [{"date": "2026-07-11", "b1_am": 0, "b1_pm": 22, "b1_cond": 0, "b2_am": 0, "b2_pm": 27, "b2_cond": 0, "b3_am": 0, "b3_pm": 31, "b3_cond": 0}, {"date": "2026-07-12", "b1_am": 52, "b1_pm": 60, "b1_cond": 0, "b2_am": 65, "b2_pm": 88, "b2_cond": 0, "b3_am": 34, "b3_pm": 37, "b3_cond": 0}, {"date": "2026-07-13", "b1_am": 48, "b1_pm": 53, "b1_cond": 0, "b2_am": 54, "b2_pm": 41, "b2_cond": 63, "b3_am": 35, "b3_pm": 35, "b3_cond": 0}, {"date": "2026-07-14", "b1_am": 50, "b1_pm": 38, "b1_cond": 38, "b2_am": 50, "b2_pm": 38, "b2_cond": 0, "b3_am": 42, "b3_pm": 35, "b3_cond": 0}, {"date": "2026-07-15", "b1_am": 43, "b1_pm": 45, "b1_cond": 0, "b2_am": 37, "b2_pm": 35, "b2_cond": 48, "b3_am": 34, "b3_pm": 35, "b3_cond": 0}, {"date": "2026-07-16", "b1_am": 21, "b1_pm": 29, "b1_cond": 31, "b2_am": 29, "b2_pm": 33, "b2_cond": 0, "b3_am": 27, "b3_pm": 30, "b3_cond": 0}, {"date": "2026-07-17", "b1_am": 27, "b1_pm": 29, "b1_cond": 0, "b2_am": 29, "b2_pm": 24, "b2_cond": 0, "b3_am": 26, "b3_pm": 28, "b3_cond": 0}, {"date": "2026-07-18", "b1_am": 22, "b1_pm": 28, "b1_cond": 0, "b2_am": 26, "b2_pm": 27, "b2_cond": 0, "b3_am": 28, "b3_pm": 29, "b3_cond": 0}, {"date": "2026-07-19", "b1_am": 22, "b1_pm": 23, "b1_cond": 0, "b2_am": 24, "b2_pm": 20, "b2_cond": 0, "b3_am": 25, "b3_pm": 38, "b3_cond": 0}, {"date": "2026-07-20", "b1_am": 25, "b1_pm": 25, "b1_cond": 0, "b2_am": 20, "b2_pm": 30, "b2_cond": 0, "b3_am": 35, "b3_pm": 0, "b3_cond": 0}, {"date": "2026-07-21", "b1_am": 23, "b1_pm": 29, "b1_cond": 0, "b2_am": 34, "b2_pm": 0, "b2_cond": 0, "b3_am": 0, "b3_pm": 0, "b3_cond": 0}, {"date": "2026-07-22", "b1_am": 35, "b1_pm": 0, "b1_cond": 0, "b2_am": 0, "b2_pm": 0, "b2_cond": 0, "b3_am": 0, "b3_pm": 0, "b3_cond": 0}];
+
+const FEEDS_SEED = [{"b1_bags": 63, "b1_fcr": 0.954, "b2_bags": 58, "b2_fcr": 0.821, "b3_bags": 65, "b3_fcr": 0.963, "date": "2026-07-12"}, {"b1_bags": 17, "b1_fcr": 1, "b2_bags": 17, "b2_fcr": 0.88, "b3_bags": 15, "b3_fcr": 1.033, "date": "2026-07-13"}, {"b1_bags": 20, "b1_fcr": 1.06, "b2_bags": 21, "b2_fcr": 0.923, "b3_bags": 20, "b3_fcr": 1.039, "date": "2026-07-14"}, {"b1_bags": 20, "b1_fcr": 0.978, "b2_bags": 23, "b2_fcr": 0.941, "b3_bags": 50, "b3_fcr": 1.192, "date": "2026-07-15"}, {"b1_bags": 30, "b1_fcr": 1.064, "b2_bags": 41, "b2_fcr": 1.061, "b3_bags": 0, "b3_fcr": 1.068, "date": "2026-07-16"}, {"b1_bags": 45, "b1_fcr": 1.133, "b2_bags": 17, "b2_fcr": 1.011, "b3_bags": 50, "b3_fcr": 1.185, "date": "2026-07-17"}, {"b1_bags": 15, "b1_fcr": 1.078, "b2_bags": 74, "b2_fcr": 1.306, "b3_bags": 25, "b3_fcr": 1.135, "date": "2026-07-18"}, {"b1_bags": 46, "b1_fcr": 1.195, "b2_bags": 20, "b2_fcr": 1.271, "b3_bags": 75, "b3_fcr": 1.351, "date": "2026-07-19"}, {"b1_bags": 30, "b1_fcr": 1.189, "b2_bags": 50, "b2_fcr": 1.284, "b3_bags": 90, "b3_fcr": 0, "date": "2026-07-20"}, {"b1_bags": 65, "b1_fcr": 1.301, "b2_bags": 24, "b2_fcr": 0, "b3_bags": 0, "b3_fcr": 0, "date": "2026-07-21"}, {"b1_bags": 35, "b1_fcr": 0, "b2_bags": 0, "b2_fcr": 0, "b3_bags": 0, "b3_fcr": 0, "date": "2026-07-22"}];
+
+const ALW_SEED = [{"b1": 44.8, "b2": 45.64, "b3": 45.04, "std_alw": 42, "date": "2026-07-11"}, {"b1": 60.4, "b2": 64.64, "b3": 61.6, "std_alw": 56, "date": "2026-07-12"}, {"b1": 73.32, "b2": 78.12, "b3": 70.72, "std_alw": 72, "date": "2026-07-13"}, {"b1": 86.52, "b2": 95.52, "b3": 88.08, "std_alw": 89, "date": "2026-07-14"}, {"b1": 112.88, "b2": 116.36, "b3": 115.3, "std_alw": 109, "date": "2026-07-15"}, {"b1": 129.84, "b2": 138.88, "b3": 128.9, "std_alw": 131, "date": "2026-07-16"}, {"b1": 158.8, "b2": 161.36, "b3": 155, "std_alw": 157, "date": "2026-07-17"}, {"b1": 179.76, "b2": 177.44, "b3": 182.2, "std_alw": 185, "date": "2026-07-18"}, {"b1": 197.92, "b2": 197.04, "b3": 204.4, "std_alw": 215, "date": "2026-07-19"}, {"b1": 222.48, "b2": 231.2, "b3": 0, "std_alw": 247, "date": "2026-07-20"}, {"b1": 249.84, "b2": 0, "b3": 0, "std_alw": 283, "date": "2026-07-21"}];
+
+function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2,7); }
+function fmt(n) { return (n||0).toLocaleString(); }
+function dayNumber(dateStr) {
+  const start = new Date(SETTINGS.chickInDate);
+  const d = new Date(dateStr);
+  return Math.round((d - start) / 86400000);
+}
+
+/* ---------- SETTINGS ---------- */
+async function settingsLoad() {
+  try {
+    const res = await window.storage.get(SETTINGS_KEY, true);
+    SETTINGS = res && res.value ? { ...SETTINGS_DEFAULT, ...JSON.parse(res.value) } : { ...SETTINGS_DEFAULT };
+  } catch (e) { SETTINGS = { ...SETTINGS_DEFAULT }; }
+  if (!(await hasSettings())) { await settingsSave(); }
+  syncSettingFields();
+}
+async function hasSettings() {
+  try { const res = await window.storage.get(SETTINGS_KEY, true); return !!(res && res.value); }
+  catch (e) { return false; }
+}
+async function settingsSave() {
+  try { await window.storage.set(SETTINGS_KEY, JSON.stringify(SETTINGS), true); }
+  catch (e) { /* best effort */ }
+}
+function syncSettingFields() {
+  document.querySelectorAll('[data-setting]').forEach(el => {
+    if (document.activeElement === el) return;
+    el.value = SETTINGS[el.dataset.setting];
+  });
+  updateBeginTotals();
+}
+function updateBeginTotals() {
+  const total = fmt((SETTINGS.beginB1||0) + (SETTINGS.beginB2||0) + (SETTINGS.beginB3||0));
+  const m = document.getElementById('m-begin-total'); if (m) m.textContent = total;
+  const h = document.getElementById('h-begin-total'); if (h) h.textContent = total;
+}
+document.addEventListener('change', async (ev) => {
+  const key = ev.target.dataset && ev.target.dataset.setting;
+  if (!key) return;
+  SETTINGS[key] = ev.target.type === 'number' ? (+ev.target.value || 0) : ev.target.value;
+  await settingsSave();
+  syncSettingFields();
+  renderAll();
+});
+
+/* ---------- tab switching ---------- */
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('panel-' + btn.dataset.tab).classList.add('active');
+  });
+});
+
+document.getElementById('print-btn').addEventListener('click', () => window.print());
+
+/* ---------- edit lock ---------- */
+const EDIT_PIN = '012421';
+document.body.classList.add('locked');
+document.getElementById('lock-btn').addEventListener('click', () => {
+  const btn = document.getElementById('lock-btn');
+  if (document.body.classList.contains('locked')) {
+    const entered = window.prompt('Enter PIN to unlock editing:');
+    if (entered === null) return;
+    if (entered === EDIT_PIN) {
+      document.body.classList.remove('locked');
+      btn.textContent = '🔓 Lock editing';
+    } else {
+      window.alert('Incorrect PIN.');
+    }
+  } else {
+    document.body.classList.add('locked');
+    btn.textContent = '🔒 Unlock editing';
+  }
+});
+
+/* ================= MORTALITY ================= */
+const MORT_KEY = 'mortality-entries-batch20';
+let mortEntries = [];
+let mortEditId = null;
+
+async function mortLoad() {
+  try {
+    const res = await window.storage.get(MORT_KEY, true);
+    mortEntries = res && res.value ? JSON.parse(res.value) : null;
+  } catch (e) { mortEntries = null; }
+  if (!mortEntries) {
+    mortEntries = MORT_SEED.map(s => ({ id: uid(), ...s }));
+    await mortSave();
+  }
+}
+async function mortSave() {
+  try { await window.storage.set(MORT_KEY, JSON.stringify(mortEntries), true); }
+  catch (e) { document.getElementById('m-status').textContent = 'Could not save — changes may not persist.'; }
+}
+function mortStats() {
+  const BEGIN = { b1: SETTINGS.beginB1, b2: SETTINGS.beginB2, b3: SETTINGS.beginB3 };
+  const stats = { b1: {mort:0}, b2: {mort:0}, b3: {mort:0} };
+  mortEntries.forEach(e => {
+    stats.b1.mort += (e.b1_am||0)+(e.b1_pm||0)+(e.b1_cond||0);
+    stats.b2.mort += (e.b2_am||0)+(e.b2_pm||0)+(e.b2_cond||0);
+    stats.b3.mort += (e.b3_am||0)+(e.b3_pm||0)+(e.b3_cond||0);
+  });
+  ['b1','b2','b3'].forEach(k => {
+    stats[k].remaining = BEGIN[k] - stats[k].mort;
+    stats[k].pct = BEGIN[k] ? (stats[k].mort / BEGIN[k] * 100) : 0;
+  });
+  const beginTotal = BEGIN.b1+BEGIN.b2+BEGIN.b3;
+  const mortTotal = stats.b1.mort+stats.b2.mort+stats.b3.mort;
+  return { ...stats, BEGIN, overall: { begin: beginTotal, mort: mortTotal, remaining: beginTotal-mortTotal, pct: beginTotal? mortTotal/beginTotal*100:0 } };
+}
+function mortRenderStats() {
+  const s = mortStats();
+  const grid = document.getElementById('mort-stats-grid');
+  const bldgCard = (label, key) => `
+    <div class="card">
+      <p class="bldg-label">${label} <span class="tag">${s[key].pct.toFixed(2)}% mortality</span></p>
+      <div class="silo"><div class="silo-fill" style="width:${Math.max(0,100-s[key].pct)}%"></div></div>
+      <div class="stat-row"><span>Beginning</span><b>${fmt(s.BEGIN[key])}</b></div>
+      <div class="stat-row hl"><span>Mortality</span><b>${fmt(s[key].mort)}</b></div>
+      <div class="stat-row"><span>Remaining</span><b>${fmt(s[key].remaining)}</b></div>
+    </div>`;
+  grid.innerHTML = bldgCard('Building 1','b1')+bldgCard('Building 2','b2')+bldgCard('Building 3','b3')+
+    `<div class="card overall">
+      <p class="bldg-label">Overall <span class="tag">${s.overall.pct.toFixed(2)}% mortality</span></p>
+      <div class="silo"><div class="silo-fill" style="width:${Math.max(0,100-s.overall.pct)}%"></div></div>
+      <div class="stat-row"><span>Beginning</span><b>${fmt(s.overall.begin)}</b></div>
+      <div class="stat-row hl"><span>Mortality</span><b>${fmt(s.overall.mort)}</b></div>
+      <div class="stat-row"><span>Remaining</span><b>${fmt(s.overall.remaining)}</b></div>
+    </div>`;
+}
+function mortRenderTable() {
+  const body = document.getElementById('mort-body');
+  const empty = document.getElementById('mort-empty');
+  const sorted = [...mortEntries].sort((a,b) => a.date.localeCompare(b.date));
+  if (sorted.length === 0) { body.innerHTML=''; empty.style.display='block'; return; }
+  empty.style.display = 'none';
+  body.innerHTML = sorted.map(e => {
+    const b1t=(e.b1_am||0)+(e.b1_pm||0)+(e.b1_cond||0), b2t=(e.b2_am||0)+(e.b2_pm||0)+(e.b2_cond||0), b3t=(e.b3_am||0)+(e.b3_pm||0)+(e.b3_cond||0);
+    return `<tr>
+      <td class="left">${e.date}</td><td>${dayNumber(e.date)}</td>
+      <td class="bgroup-1">${e.b1_am||0}</td><td>${e.b1_pm||0}</td><td>${e.b1_cond||0}</td><td class="rowtotal">${b1t}</td>
+      <td class="bgroup-2">${e.b2_am||0}</td><td>${e.b2_pm||0}</td><td>${e.b2_cond||0}</td><td class="rowtotal">${b2t}</td>
+      <td class="bgroup-3">${e.b3_am||0}</td><td>${e.b3_pm||0}</td><td>${e.b3_cond||0}</td><td class="rowtotal">${b3t}</td>
+      <td class="rowtotal">${b1t+b2t+b3t}</td>
+      <td class="row-actions"><button type="button" class="edit" data-id="${e.id}">Edit</button><button type="button" class="del" data-id="${e.id}">Delete</button></td>
+    </tr>`;
+  }).join('');
+  body.querySelectorAll('.edit').forEach(b => b.addEventListener('click', () => mortStartEdit(b.dataset.id)));
+  body.querySelectorAll('.del').forEach(b => b.addEventListener('click', () => mortDelete(b.dataset.id)));
+}
+function mortRender() { mortRenderStats(); mortRenderTable(); }
+function mortStartEdit(id) {
+  const e = mortEntries.find(x => x.id===id); if (!e) return;
+  mortEditId = id;
+  document.getElementById('m-date').value = e.date;
+  ['b1','b2','b3'].forEach(b => { ['am','pm','cond'].forEach(f => { document.getElementById(`m-${b}-${f}`).value = e[`${b}_${f}`]||0; }); });
+  document.getElementById('m-submit').textContent = 'Save changes';
+  document.getElementById('m-cancel').style.display = 'inline-block';
+  window.scrollTo({ top: document.getElementById('mort-form').offsetTop-20, behavior:'smooth' });
+}
+async function mortDelete(id) { mortEntries = mortEntries.filter(x => x.id!==id); await mortSave(); renderAll(); }
+function mortReset() {
+  document.getElementById('mort-form').reset();
+  ['b1','b2','b3'].forEach(b => { ['am','pm','cond'].forEach(f => { document.getElementById(`m-${b}-${f}`).value = 0; }); });
+  mortEditId = null;
+  document.getElementById('m-submit').textContent = 'Add entry';
+  document.getElementById('m-cancel').style.display = 'none';
+}
+document.getElementById('m-cancel').addEventListener('click', mortReset);
+document.getElementById('mort-form').addEventListener('submit', async (ev) => {
+  ev.preventDefault();
+  const date = document.getElementById('m-date').value; if (!date) return;
+  const vals = { date };
+  ['b1','b2','b3'].forEach(b => { ['am','pm','cond'].forEach(f => { vals[`${b}_${f}`] = +document.getElementById(`m-${b}-${f}`).value || 0; }); });
+  const status = document.getElementById('m-status');
+  if (mortEditId) {
+    const idx = mortEntries.findIndex(x => x.id===mortEditId);
+    if (idx>-1) mortEntries[idx] = { ...mortEntries[idx], ...vals };
+    status.textContent = 'Entry updated.';
+  } else {
+    const existing = mortEntries.find(x => x.date===date);
+    if (existing) { Object.assign(existing, vals); status.textContent = 'Existing entry for that date updated.'; }
+    else { mortEntries.push({ id: uid(), ...vals }); status.textContent = 'Entry added.'; }
+  }
+  await mortSave(); renderAll(); mortReset();
+  setTimeout(() => { status.textContent=''; }, 3000);
+});
+
+/* ================= FEEDS ================= */
+const FEEDS_KEY = 'feeds-entries-batch20';
+let feedsEntries = [];
+let feedsEditId = null;
+
+async function feedsLoad() {
+  try {
+    const res = await window.storage.get(FEEDS_KEY, true);
+    feedsEntries = res && res.value ? JSON.parse(res.value) : null;
+  } catch (e) { feedsEntries = null; }
+  if (!feedsEntries) {
+    feedsEntries = FEEDS_SEED.map(s => ({ id: uid(), ...s }));
+    await feedsSave();
+  }
+}
+async function feedsSave() {
+  try { await window.storage.set(FEEDS_KEY, JSON.stringify(feedsEntries), true); }
+  catch (e) { document.getElementById('f-status').textContent = 'Could not save — changes may not persist.'; }
+}
+function feedsStats() {
+  const sorted = [...feedsEntries].sort((a,b) => a.date.localeCompare(b.date));
+  let b1=0,b2=0,b3=0, fcrSum={b1:[],b2:[],b3:[]}, weighted=0, weightedBags=0;
+  sorted.forEach(e => {
+    b1 += e.b1_bags||0; b2 += e.b2_bags||0; b3 += e.b3_bags||0;
+    if (e.b1_fcr) fcrSum.b1.push(e.b1_fcr);
+    if (e.b2_fcr) fcrSum.b2.push(e.b2_fcr);
+    if (e.b3_fcr) fcrSum.b3.push(e.b3_fcr);
+    [['b1_bags','b1_fcr'],['b2_bags','b2_fcr'],['b3_bags','b3_fcr']].forEach(([bk,fk]) => {
+      if (e[bk] && e[fk]) { weighted += e[bk]*e[fk]; weightedBags += e[bk]; }
+    });
+  });
+  const latest = arr => arr.length ? arr[arr.length-1] : 0;
+  const totalDelivered = SETTINGS.feedsDelivered;
+  const totalConsumed = SETTINGS.feedsConsumedManual;
+  const totalFcr = SETTINGS.feedsFcrManual;
+  return {
+    b1: { bags: b1, fcr: latest(fcrSum.b1) }, b2: { bags: b2, fcr: latest(fcrSum.b2) }, b3: { bags: b3, fcr: latest(fcrSum.b3) },
+    all: { bags: totalConsumed, delivered: totalDelivered, remaining: totalDelivered-totalConsumed, totalFcr }
+  };
+}
+function feedsRenderStats() {
+  const s = feedsStats();
+  const grid = document.getElementById('feeds-stats-grid');
+  const bldgCard = (label, key) => `
+    <div class="card feeds">
+      <p class="bldg-label">${label} <span class="tag">FCR ${s[key].fcr ? s[key].fcr.toFixed(3) : '—'}</span></p>
+      <div class="stat-row hl"><span>Bags consumed (total)</span><b>${fmt(s[key].bags)}</b></div>
+    </div>`;
+  grid.innerHTML = bldgCard('Building 1','b1')+bldgCard('Building 2','b2')+bldgCard('Building 3','b3')+
+    `<div class="card overall">
+      <p class="bldg-label">Overall <span class="tag">editable</span></p>
+      <div class="stat-row"><span>Delivered (bags)</span><input type="number" min="0" data-setting="feedsDelivered" style="width:90px; height:26px; text-align:right;"></div>
+      <div class="stat-row hl"><span>Consumed (bags)</span><input type="number" min="0" data-setting="feedsConsumedManual" style="width:90px; height:26px; text-align:right;"></div>
+      <div class="stat-row"><span>Remaining</span><b>${fmt(s.all.remaining)}</b></div>
+      <div class="stat-row"><span>Total FCR</span><input type="number" min="0" step="0.001" data-setting="feedsFcrManual" style="width:90px; height:26px; text-align:right;"></div>
+    </div>`;
+  syncSettingFields();
+}
+function feedsRenderTable() {
+  const body = document.getElementById('feeds-body');
+  const empty = document.getElementById('feeds-empty');
+  const sorted = [...feedsEntries].sort((a,b) => a.date.localeCompare(b.date));
+  if (sorted.length === 0) { body.innerHTML=''; empty.style.display='block'; return; }
+  empty.style.display = 'none';
+  let cum = 0;
+  body.innerHTML = sorted.map(e => {
+    const all = (e.b1_bags||0)+(e.b2_bags||0)+(e.b3_bags||0);
+    cum += all;
+    return `<tr>
+      <td class="left">${e.date}</td><td>${dayNumber(e.date)}</td>
+      <td class="bgroup-1">${e.b1_bags||0}</td><td>${e.b1_fcr||0}</td>
+      <td class="bgroup-2">${e.b2_bags||0}</td><td>${e.b2_fcr||0}</td>
+      <td class="bgroup-3">${e.b3_bags||0}</td><td>${e.b3_fcr||0}</td>
+      <td class="bgroup-all rowtotal">${all}</td><td class="rowtotal">${cum}</td>
+      <td class="row-actions"><button type="button" class="edit" data-id="${e.id}">Edit</button><button type="button" class="del" data-id="${e.id}">Delete</button></td>
+    </tr>`;
+  }).join('');
+  body.querySelectorAll('.edit').forEach(b => b.addEventListener('click', () => feedsStartEdit(b.dataset.id)));
+  body.querySelectorAll('.del').forEach(b => b.addEventListener('click', () => feedsDelete(b.dataset.id)));
+}
+function feedsRender() { feedsRenderStats(); feedsRenderTable(); }
+function feedsStartEdit(id) {
+  const e = feedsEntries.find(x => x.id===id); if (!e) return;
+  feedsEditId = id;
+  document.getElementById('f-date').value = e.date;
+  ['b1','b2','b3'].forEach(b => { document.getElementById(`f-${b}-bags`).value = e[`${b}_bags`]||0; document.getElementById(`f-${b}-fcr`).value = e[`${b}_fcr`]||0; });
+  document.getElementById('f-submit').textContent = 'Save changes';
+  document.getElementById('f-cancel').style.display = 'inline-block';
+  window.scrollTo({ top: document.getElementById('feeds-form').offsetTop-20, behavior:'smooth' });
+}
+async function feedsDelete(id) { feedsEntries = feedsEntries.filter(x => x.id!==id); await feedsSave(); renderAll(); }
+function feedsReset() {
+  document.getElementById('feeds-form').reset();
+  ['b1','b2','b3'].forEach(b => { document.getElementById(`f-${b}-bags`).value = 0; document.getElementById(`f-${b}-fcr`).value = 0; });
+  feedsEditId = null;
+  document.getElementById('f-submit').textContent = 'Add entry';
+  document.getElementById('f-cancel').style.display = 'none';
+}
+document.getElementById('f-cancel').addEventListener('click', feedsReset);
+document.getElementById('feeds-form').addEventListener('submit', async (ev) => {
+  ev.preventDefault();
+  const date = document.getElementById('f-date').value; if (!date) return;
+  const vals = { date };
+  ['b1','b2','b3'].forEach(b => { vals[`${b}_bags`] = +document.getElementById(`f-${b}-bags`).value || 0; vals[`${b}_fcr`] = +document.getElementById(`f-${b}-fcr`).value || 0; });
+  const status = document.getElementById('f-status');
+  if (feedsEditId) {
+    const idx = feedsEntries.findIndex(x => x.id===feedsEditId);
+    if (idx>-1) feedsEntries[idx] = { ...feedsEntries[idx], ...vals };
+    status.textContent = 'Entry updated.';
+  } else {
+    const existing = feedsEntries.find(x => x.date===date);
+    if (existing) { Object.assign(existing, vals); status.textContent = 'Existing entry for that date updated.'; }
+    else { feedsEntries.push({ id: uid(), ...vals }); status.textContent = 'Entry added.'; }
+  }
+  await feedsSave(); renderAll(); feedsReset();
+  setTimeout(() => { status.textContent=''; }, 3000);
+});
+
+/* ================= ALW ================= */
+const ALW_KEY = 'alw-entries-batch20';
+let alwEntries = [];
+let alwEditId = null;
+
+async function alwLoad() {
+  try {
+    const res = await window.storage.get(ALW_KEY, true);
+    alwEntries = res && res.value ? JSON.parse(res.value) : null;
+  } catch (e) { alwEntries = null; }
+  if (!alwEntries) {
+    alwEntries = ALW_SEED.map(s => ({ id: uid(), b1_std: s.date===ALW_SEED[0].date?42:null, ...s }));
+    await alwSave();
+  }
+}
+async function alwSave() {
+  try { await window.storage.set(ALW_KEY, JSON.stringify(alwEntries), true); }
+  catch (e) { document.getElementById('a-status').textContent = 'Could not save — changes may not persist.'; }
+}
+function alwAvg(e) {
+  const vals = [e.b1, e.b2, e.b3].filter(v => v !== null && v !== undefined && v !== 0);
+  return vals.length ? vals.reduce((a,b)=>a+b,0)/vals.length : 0;
+}
+function alwRenderStats() {
+  const sorted = [...alwEntries].sort((a,b) => a.date.localeCompare(b.date));
+  const latest = sorted[sorted.length-1];
+  const prev = sorted[sorted.length-2];
+  const grid = document.getElementById('alw-stats-grid');
+  const bldgCard = (label, key) => {
+    const val = latest ? (latest[key]||0) : 0;
+    const target = latest ? latest[key+'_std'] : null;
+    return `<div class="card">
+      <p class="bldg-label">${label} <span class="tag">${target ? 'target '+target+'g' : ''}</span></p>
+      <div class="stat-row hl"><span>Latest ALW</span><b>${val.toFixed(1)} g</b></div>
+    </div>`;
+  };
+  const avgLatest = latest ? alwAvg(latest) : 0;
+  const avgPrev = prev ? alwAvg(prev) : 0;
+  const adg = prev ? (avgLatest - avgPrev) : 0;
+  grid.innerHTML = bldgCard('Building 1','b1')+bldgCard('Building 2','b2')+bldgCard('Building 3','b3')+
+    `<div class="card overall">
+      <p class="bldg-label">Average <span class="tag">ADG ${adg.toFixed(1)} g/day</span></p>
+      <div class="stat-row hl"><span>Latest avg ALW</span><b>${avgLatest.toFixed(1)} g</b></div>
+    </div>`;
+}
+function alwRenderTable() {
+  const body = document.getElementById('alw-body');
+  const empty = document.getElementById('alw-empty');
+  const sorted = [...alwEntries].sort((a,b) => a.date.localeCompare(b.date));
+  if (sorted.length === 0) { body.innerHTML=''; empty.style.display='block'; return; }
+  empty.style.display = 'none';
+  let prevAvg = null;
+  body.innerHTML = sorted.map(e => {
+    const avg = alwAvg(e);
+    const adg = prevAvg !== null ? (avg - prevAvg) : null;
+    prevAvg = avg;
+    const targets = [e.b1_std,e.b2_std,e.b3_std].filter(v=>v);
+    const targetAvg = targets.length ? targets.reduce((a,b)=>a+b,0)/targets.length : null;
+    const vsTarget = targetAvg ? (avg-targetAvg).toFixed(1) : '—';
+    return `<tr>
+      <td class="left">${e.date}</td><td>${dayNumber(e.date)}</td>
+      <td class="bgroup-1">${(e.b1||0).toFixed(1)}</td><td class="bgroup-2">${(e.b2||0).toFixed(1)}</td><td class="bgroup-3">${(e.b3||0).toFixed(1)}</td>
+      <td class="bgroup-all rowtotal">${avg.toFixed(1)}</td>
+      <td>${adg !== null ? adg.toFixed(1) : '—'}</td>
+      <td>${vsTarget}</td>
+      <td class="row-actions"><button type="button" class="edit" data-id="${e.id}">Edit</button><button type="button" class="del" data-id="${e.id}">Delete</button></td>
+    </tr>`;
+  }).join('');
+  body.querySelectorAll('.edit').forEach(b => b.addEventListener('click', () => alwStartEdit(b.dataset.id)));
+  body.querySelectorAll('.del').forEach(b => b.addEventListener('click', () => alwDelete(b.dataset.id)));
+}
+function alwRender() { alwRenderStats(); alwRenderTable(); }
+function alwStartEdit(id) {
+  const e = alwEntries.find(x => x.id===id); if (!e) return;
+  alwEditId = id;
+  document.getElementById('a-date').value = e.date;
+  ['b1','b2','b3'].forEach(b => { document.getElementById(`a-${b}`).value = e[b]||0; document.getElementById(`a-${b}-std`).value = e[`${b}_std`]||''; });
+  document.getElementById('a-submit').textContent = 'Save changes';
+  document.getElementById('a-cancel').style.display = 'inline-block';
+  window.scrollTo({ top: document.getElementById('alw-form').offsetTop-20, behavior:'smooth' });
+}
+async function alwDelete(id) { alwEntries = alwEntries.filter(x => x.id!==id); await alwSave(); renderAll(); }
+function alwReset() {
+  document.getElementById('alw-form').reset();
+  ['b1','b2','b3'].forEach(b => { document.getElementById(`a-${b}`).value = 0; document.getElementById(`a-${b}-std`).value = ''; });
+  alwEditId = null;
+  document.getElementById('a-submit').textContent = 'Add entry';
+  document.getElementById('a-cancel').style.display = 'none';
+}
+document.getElementById('a-cancel').addEventListener('click', alwReset);
+document.getElementById('alw-form').addEventListener('submit', async (ev) => {
+  ev.preventDefault();
+  const date = document.getElementById('a-date').value; if (!date) return;
+  const vals = { date };
+  ['b1','b2','b3'].forEach(b => {
+    vals[b] = +document.getElementById(`a-${b}`).value || 0;
+    const std = document.getElementById(`a-${b}-std`).value;
+    vals[`${b}_std`] = std ? +std : null;
+  });
+  const status = document.getElementById('a-status');
+  if (alwEditId) {
+    const idx = alwEntries.findIndex(x => x.id===alwEditId);
+    if (idx>-1) alwEntries[idx] = { ...alwEntries[idx], ...vals };
+    status.textContent = 'Entry updated.';
+  } else {
+    const existing = alwEntries.find(x => x.date===date);
+    if (existing) { Object.assign(existing, vals); status.textContent = 'Existing entry for that date updated.'; }
+    else { alwEntries.push({ id: uid(), ...vals }); status.textContent = 'Entry added.'; }
+  }
+  await alwSave(); renderAll(); alwReset();
+  setTimeout(() => { status.textContent=''; }, 3000);
+});
+
+/* ================= HARVEST ================= */
+const HARVEST_KEY = 'harvest-entries-batch20';
+let harvestEntries = [];
+let harvestEditId = null;
+
+async function harvestLoad() {
+  try {
+    const res = await window.storage.get(HARVEST_KEY, true);
+    harvestEntries = res && res.value ? JSON.parse(res.value) : [];
+  } catch (e) { harvestEntries = []; }
+}
+async function harvestSave() {
+  try { await window.storage.set(HARVEST_KEY, JSON.stringify(harvestEntries), true); }
+  catch (e) { document.getElementById('h-status').textContent = 'Could not save — changes may not persist.'; }
+}
+function harvestStats() {
+  const s = { b1:{kilos:0,heads:0}, b2:{kilos:0,heads:0}, b3:{kilos:0,heads:0} };
+  harvestEntries.forEach(e => { const k='b'+e.bldg; if (s[k]) { s[k].kilos += e.kilos||0; s[k].heads += e.heads||0; } });
+  ['b1','b2','b3'].forEach(k => { s[k].alw = s[k].heads ? (s[k].kilos*1000/s[k].heads) : 0; });
+  const totalKilos = s.b1.kilos+s.b2.kilos+s.b3.kilos;
+  const totalHeads = s.b1.heads+s.b2.heads+s.b3.heads;
+  const beginTotal = SETTINGS.beginB1+SETTINGS.beginB2+SETTINGS.beginB3;
+  const mortTotal = mortEntries.reduce((sum,e) => sum + (e.b1_am||0)+(e.b1_pm||0)+(e.b1_cond||0)+(e.b2_am||0)+(e.b2_pm||0)+(e.b2_cond||0)+(e.b3_am||0)+(e.b3_pm||0)+(e.b3_cond||0), 0);
+  return { ...s, overall: { kilos: totalKilos, heads: totalHeads, alw: totalHeads ? totalKilos*1000/totalHeads : 0, remainingFlock: beginTotal - mortTotal - totalHeads } };
+}
+function harvestRenderStats() {
+  const s = harvestStats();
+  const grid = document.getElementById('harvest-stats-grid');
+  const bldgCard = (label, key) => `
+    <div class="card">
+      <p class="bldg-label">${label} <span class="tag">${s[key].alw ? s[key].alw.toFixed(0)+'g avg' : ''}</span></p>
+      <div class="stat-row"><span>Kilos</span><b>${fmt(s[key].kilos.toFixed(1))}</b></div>
+      <div class="stat-row hl"><span>Heads</span><b>${fmt(s[key].heads)}</b></div>
+    </div>`;
+  const beginTotal = SETTINGS.beginB1+SETTINGS.beginB2+SETTINGS.beginB3;
+  const runningHR = beginTotal ? (s.overall.remainingFlock / beginTotal * 100) : 0;
+  const runningFCR = s.overall.kilos ? (SETTINGS.feedsConsumedManual / s.overall.kilos) : 0;
+  grid.innerHTML = bldgCard('Building 1','b1')+bldgCard('Building 2','b2')+bldgCard('Building 3','b3')+
+    `<div class="card overall">
+      <p class="bldg-label">Overall <span class="tag">${s.overall.alw ? s.overall.alw.toFixed(0)+'g avg' : ''}</span></p>
+      <div class="stat-row"><span>Total kilos</span><b>${fmt(s.overall.kilos.toFixed(1))}</b></div>
+      <div class="stat-row hl"><span>Total heads</span><b>${fmt(s.overall.heads)}</b></div>
+      <div class="stat-row"><span>Flock remaining</span><b>${fmt(s.overall.remainingFlock)}</b></div>
+    </div>` +
+    `<div class="card feeds">
+      <p class="bldg-label">Running metrics</p>
+      <div class="stat-row"><span>Running HR</span><b>${beginTotal ? runningHR.toFixed(2)+'%' : '—'}</b></div>
+      <div class="stat-row hl"><span>Running FCR</span><b>${s.overall.kilos ? runningFCR.toFixed(3) : '—'}</b></div>
+      <div class="stat-row"><span>Running ALW</span><b>${s.overall.heads ? s.overall.alw.toFixed(0)+' g' : '—'}</b></div>
+    </div>`;
+}
+function harvestRenderTable() {
+  const body = document.getElementById('harvest-body');
+  const empty = document.getElementById('harvest-empty');
+  const sorted = [...harvestEntries].sort((a,b) => a.date.localeCompare(b.date));
+  if (sorted.length === 0) { body.innerHTML=''; empty.style.display='block'; return; }
+  empty.style.display = 'none';
+  body.innerHTML = sorted.map(e => {
+    const alw = e.heads ? (e.kilos*1000/e.heads) : 0;
+    return `<tr>
+      <td class="left">${e.date}</td><td>${dayNumber(e.date)}</td><td>Building ${e.bldg}</td>
+      <td>${(e.kilos||0).toFixed(1)}</td><td>${fmt(e.heads||0)}</td><td class="rowtotal">${alw.toFixed(0)}</td>
+      <td class="row-actions"><button type="button" class="edit" data-id="${e.id}">Edit</button><button type="button" class="del" data-id="${e.id}">Delete</button></td>
+    </tr>`;
+  }).join('');
+  body.querySelectorAll('.edit').forEach(b => b.addEventListener('click', () => harvestStartEdit(b.dataset.id)));
+  body.querySelectorAll('.del').forEach(b => b.addEventListener('click', () => harvestDelete(b.dataset.id)));
+}
+function harvestRender() { harvestRenderStats(); harvestRenderTable(); }
+function harvestStartEdit(id) {
+  const e = harvestEntries.find(x => x.id===id); if (!e) return;
+  harvestEditId = id;
+  document.getElementById('h-date').value = e.date;
+  document.getElementById('h-bldg').value = e.bldg;
+  document.getElementById('h-kilos').value = e.kilos||0;
+  document.getElementById('h-heads').value = e.heads||0;
+  document.getElementById('h-submit').textContent = 'Save changes';
+  document.getElementById('h-cancel').style.display = 'inline-block';
+  window.scrollTo({ top: document.getElementById('harvest-form').offsetTop-20, behavior:'smooth' });
+}
+async function harvestDelete(id) { harvestEntries = harvestEntries.filter(x => x.id!==id); await harvestSave(); renderAll(); }
+function harvestReset() {
+  document.getElementById('harvest-form').reset();
+  document.getElementById('h-kilos').value = 0;
+  document.getElementById('h-heads').value = 0;
+  harvestEditId = null;
+  document.getElementById('h-submit').textContent = 'Add entry';
+  document.getElementById('h-cancel').style.display = 'none';
+}
+document.getElementById('h-cancel').addEventListener('click', harvestReset);
+document.getElementById('harvest-form').addEventListener('submit', async (ev) => {
+  ev.preventDefault();
+  const date = document.getElementById('h-date').value; if (!date) return;
+  const vals = { date, bldg: +document.getElementById('h-bldg').value, kilos: +document.getElementById('h-kilos').value || 0, heads: +document.getElementById('h-heads').value || 0 };
+  const status = document.getElementById('h-status');
+  if (harvestEditId) {
+    const idx = harvestEntries.findIndex(x => x.id===harvestEditId);
+    if (idx>-1) harvestEntries[idx] = { ...harvestEntries[idx], ...vals };
+    status.textContent = 'Entry updated.';
+  } else {
+    harvestEntries.push({ id: uid(), ...vals });
+    status.textContent = 'Entry added.';
+  }
+  await harvestSave(); renderAll(); harvestReset();
+  setTimeout(() => { status.textContent=''; }, 3000);
+});
+
+/* ================= SUMMARY ================= */
+function summaryRender() {
+  const beginTotal = SETTINGS.beginB1 + SETTINGS.beginB2 + SETTINGS.beginB3;
+  const mortTotal = mortEntries.reduce((sum,e) => sum + (e.b1_am||0)+(e.b1_pm||0)+(e.b1_cond||0)+(e.b2_am||0)+(e.b2_pm||0)+(e.b2_cond||0)+(e.b3_am||0)+(e.b3_pm||0)+(e.b3_cond||0), 0);
+  const hs = harvestStats();
+  const delivered = SETTINGS.feedsDelivered;
+  const consumed = SETTINGS.feedsConsumedManual;
+  const remainingFeeds = delivered - consumed;
+  const runningHR = beginTotal ? (hs.overall.remainingFlock / beginTotal * 100) : 0;
+  const runningFCR = hs.overall.kilos ? (consumed / hs.overall.kilos) : null;
+  const runningALW = hs.overall.heads ? hs.overall.alw : null;
+
+  document.getElementById('sum-begin').textContent = fmt(beginTotal);
+  document.getElementById('sum-delivered').textContent = fmt(delivered);
+  document.getElementById('sum-consumed').textContent = fmt(consumed);
+  document.getElementById('sum-remaining-feeds').textContent = fmt(remainingFeeds);
+  document.getElementById('sum-tinventory').textContent = fmt(beginTotal);
+  document.getElementById('sum-tkilos').textContent = fmt(hs.overall.kilos.toFixed(1));
+  document.getElementById('sum-tharvest').textContent = fmt(hs.overall.heads);
+  document.getElementById('sum-remaining-runts').textContent = fmt(hs.overall.remainingFlock);
+  document.getElementById('sum-mortality').textContent = fmt(mortTotal);
+  document.getElementById('sum-hr').textContent = runningHR.toFixed(2) + '%';
+  document.getElementById('sum-fcr').textContent = runningFCR !== null ? runningFCR.toFixed(3) : '—';
+  document.getElementById('sum-alw').textContent = runningALW !== null ? runningALW.toFixed(0) + ' g' : '—';
+}
+
+function renderAll() {
+  mortRender();
+  feedsRender();
+  alwRender();
+  harvestRender();
+  summaryRender();
+}
+
+(async function init() {
+  await settingsLoad();
+  await Promise.all([mortLoad(), feedsLoad(), alwLoad(), harvestLoad()]);
+  renderAll();
+})();
+</script>
+</body>
+</html>
