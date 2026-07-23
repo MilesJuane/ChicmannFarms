@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -512,11 +513,12 @@ async function saveWithVerify(key, dataStr, statusElId) {
   }
 }
 
-/* ---------- storage: local-only by default for reliability. ----------
-   Saves to this browser's own storage, so it always works the same way
-   whether opened inside Claude or as a downloaded file — but it is NOT
-   shared between different people/devices. ---------- */
-const storageAPI = {
+/* ---------- storage: shared window.storage when available (multi-device, ----------
+   shared across everyone who opens this artifact), falling back to this
+   browser's own localStorage only if window.storage isn't available at all
+   (e.g. opened as a downloaded standalone file). ---------- */
+const usingLocalFallback = (typeof window.storage === 'undefined');
+const storageAPI = usingLocalFallback ? {
   async get(key) {
     const v = localStorage.getItem('farmlog:' + key);
     return v !== null ? { value: v } : null;
@@ -525,11 +527,14 @@ const storageAPI = {
     localStorage.setItem('farmlog:' + key, value);
     return { value };
   }
-};
+} : window.storage;
+
 {
   const note = document.getElementById('storage-mode-note');
   note.style.display = 'block';
-  note.textContent = 'Saved to this browser only — not shared with others. Use the same browser/device each time to keep your data.';
+  note.textContent = usingLocalFallback
+    ? 'Saved to this browser only — not shared with others.'
+    : 'Shared data — anyone who opens this app sees the same saved entries.';
 }
 
 /* ---------- SETTINGS ---------- */
