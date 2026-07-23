@@ -1,12 +1,12 @@
 <!DOCTYPE html>
-<!-- saved from url=(0053)file:///C:/CHICMANN%20FARM/Chicmann%20HTML/index.html -->
-<html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-
+<html lang="en">
+<head>
+<meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Batch 20 — Farm Log</title>
-<link rel="preconnect" href="https://fonts.googleapis.com/">
-<link rel="preconnect" href="https://fonts.gstatic.com/" crossorigin="">
-<link href="./Batch 20 — Farm Log_files/css2" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Zilla+Slab:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
   :root {
     --paper: #F1ECDF;
@@ -125,6 +125,18 @@
   .inline-edit:focus { outline: none; border-bottom-color: var(--barn); }
   body.locked .inline-edit { pointer-events: none; border-bottom-color: transparent; }
 
+  .modal-overlay { position: fixed; inset: 0; background: rgba(42,36,25,0.55); display: none; align-items: center; justify-content: center; z-index: 1000; }
+  .modal-overlay.show { display: flex; }
+  .modal-box { background: var(--card); border-radius: 10px; padding: 1.5rem 1.75rem; width: 260px; box-shadow: 0 10px 30px rgba(0,0,0,0.25); }
+  .modal-box h3 { font-family: 'Zilla Slab', serif; margin: 0 0 12px; font-size: 17px; }
+  .modal-box input { width: 100%; margin-bottom: 10px; }
+  .modal-box .modal-actions { display: flex; gap: 8px; justify-content: flex-end; }
+  .modal-error { color: var(--barn); font-size: 12px; min-height: 16px; margin: -4px 0 6px; }
+
+  #save-toast { position: fixed; top: 18px; right: 18px; background: var(--moss); color: #fff; padding: 10px 16px; border-radius: 8px; font-size: 13px; font-weight: 600; opacity: 0; pointer-events: none; transition: opacity 0.25s ease; z-index: 2000; }
+  #save-toast.show { opacity: 1; }
+  #save-toast.error { background: var(--barn); }
+
   @media print {
     .tabs, form.entry, #print-btn, .settings-bar { display: none !important; }
     .tab-panel { display: block !important; margin-bottom: 2rem; page-break-inside: avoid; }
@@ -135,7 +147,7 @@
   }
 </style>
 </head>
-<body class="">
+<body>
 <div class="wrap">
 
   <header>
@@ -148,9 +160,9 @@
         <div>
           <div><b>Batch <input type="text" class="inline-edit" data-setting="batchNumber" style="width:36px;"></b> · Grow #<input type="text" class="inline-edit" data-setting="growNumber" style="width:24px;">, <input type="text" class="inline-edit" data-setting="growYear" style="width:48px;"></div>
           <div>Breed: Cobb 500</div>
-          <div id="storage-mode-note" style="display: block; font-size: 11px; color: var(--barn); margin-top: 4px;">Saving to this browser only (not shared with others) — open via Claude to share data with your team.</div>
+          <div id="storage-mode-note" style="display:none; font-size:11px; color:var(--barn); margin-top:4px;"></div>
         </div>
-        <button type="button" id="lock-btn" class="secondary">🔓 Lock editing</button>
+        <button type="button" id="lock-btn" class="secondary">🔒 Unlock editing</button>
         <button type="button" id="print-btn" class="secondary">🖨 Print / save report</button>
       </div>
     </div>
@@ -171,43 +183,16 @@
       <div class="field"><label>Beginning inv. B1</label><input type="number" min="0" data-setting="beginB1"></div>
       <div class="field"><label>Beginning inv. B2</label><input type="number" min="0" data-setting="beginB2"></div>
       <div class="field"><label>Beginning inv. B3</label><input type="number" min="0" data-setting="beginB3"></div>
-      <div class="field"><label>Total beginning inv.</label><div id="m-begin-total" style="height:34px;display:flex;align-items:center;font-weight:600;">164,480</div></div>
+      <div class="field"><label>Total beginning inv.</label><div id="m-begin-total" style="height:34px;display:flex;align-items:center;font-weight:600;">0</div></div>
     </div>
-    <div class="grid4" id="mort-stats-grid">
-    <div class="card">
-      <p class="bldg-label">Building 1 <span class="tag">1.55% mortality</span></p>
-      <div class="silo"><div class="silo-fill" style="width:98.45005111727764%"></div></div>
-      <div class="stat-row"><span>Beginning</span><b>54,776</b></div>
-      <div class="stat-row hl"><span>Mortality</span><b>849</b></div>
-      <div class="stat-row"><span>Remaining</span><b>53,927</b></div>
-    </div>
-    <div class="card">
-      <p class="bldg-label">Building 2 <span class="tag">1.59% mortality</span></p>
-      <div class="silo"><div class="silo-fill" style="width:98.40867663142545%"></div></div>
-      <div class="stat-row"><span>Beginning</span><b>54,860</b></div>
-      <div class="stat-row hl"><span>Mortality</span><b>873</b></div>
-      <div class="stat-row"><span>Remaining</span><b>53,987</b></div>
-    </div>
-    <div class="card">
-      <p class="bldg-label">Building 3 <span class="tag">1.15% mortality</span></p>
-      <div class="silo"><div class="silo-fill" style="width:98.84764058055576%"></div></div>
-      <div class="stat-row"><span>Beginning</span><b>54,844</b></div>
-      <div class="stat-row hl"><span>Mortality</span><b>632</b></div>
-      <div class="stat-row"><span>Remaining</span><b>54,212</b></div>
-    </div><div class="card overall">
-      <p class="bldg-label">Overall <span class="tag">1.43% mortality</span></p>
-      <div class="silo"><div class="silo-fill" style="width:98.56882295719845%"></div></div>
-      <div class="stat-row"><span>Beginning</span><b>164,480</b></div>
-      <div class="stat-row hl"><span>Mortality</span><b>2,354</b></div>
-      <div class="stat-row"><span>Remaining</span><b>162,126</b></div>
-    </div></div>
+    <div class="grid4" id="mort-stats-grid"></div>
 
     <h2>Add a day's count</h2>
     <form class="entry" id="mort-form">
       <div class="form-grid">
         <div class="field">
           <label for="m-date">Date</label>
-          <input type="date" id="m-date" required="">
+          <input type="date" id="m-date" required>
         </div>
         <div class="field">
           <label>Building 1</label>
@@ -235,7 +220,7 @@
         </div>
       </div>
       <div class="form-actions">
-        <button type="button" class="secondary" id="m-cancel" style="display: none;">Cancel edit</button>
+        <button type="button" class="secondary" id="m-cancel" style="display:none;">Cancel edit</button>
         <button type="submit" id="m-submit">Add entry</button>
       </div>
       <div class="status" id="m-status"></div>
@@ -253,91 +238,7 @@
             <th>Day total</th><th class="no-print"></th>
           </tr>
         </thead>
-        <tbody id="mort-body"><tr>
-      <td class="left">2026-07-11</td><td>0</td>
-      <td class="bgroup-1">0</td><td>22</td><td>0</td><td class="rowtotal">22</td>
-      <td class="bgroup-2">0</td><td>27</td><td>0</td><td class="rowtotal">27</td>
-      <td class="bgroup-3">0</td><td>31</td><td>0</td><td class="rowtotal">31</td>
-      <td class="rowtotal">80</td>
-      <td class="row-actions"><button type="button" class="edit" data-id="mrx9spe7mg2y5">Edit</button><button type="button" class="del" data-id="mrx9spe7mg2y5">Delete</button></td>
-    </tr><tr>
-      <td class="left">2026-07-12</td><td>1</td>
-      <td class="bgroup-1">52</td><td>60</td><td>0</td><td class="rowtotal">112</td>
-      <td class="bgroup-2">65</td><td>88</td><td>0</td><td class="rowtotal">153</td>
-      <td class="bgroup-3">34</td><td>37</td><td>0</td><td class="rowtotal">71</td>
-      <td class="rowtotal">336</td>
-      <td class="row-actions"><button type="button" class="edit" data-id="mrx9spe7g4xyy">Edit</button><button type="button" class="del" data-id="mrx9spe7g4xyy">Delete</button></td>
-    </tr><tr>
-      <td class="left">2026-07-13</td><td>2</td>
-      <td class="bgroup-1">48</td><td>53</td><td>0</td><td class="rowtotal">101</td>
-      <td class="bgroup-2">54</td><td>41</td><td>63</td><td class="rowtotal">158</td>
-      <td class="bgroup-3">35</td><td>35</td><td>0</td><td class="rowtotal">70</td>
-      <td class="rowtotal">329</td>
-      <td class="row-actions"><button type="button" class="edit" data-id="mrx9spe74iysb">Edit</button><button type="button" class="del" data-id="mrx9spe74iysb">Delete</button></td>
-    </tr><tr>
-      <td class="left">2026-07-14</td><td>3</td>
-      <td class="bgroup-1">50</td><td>38</td><td>38</td><td class="rowtotal">126</td>
-      <td class="bgroup-2">50</td><td>38</td><td>0</td><td class="rowtotal">88</td>
-      <td class="bgroup-3">42</td><td>35</td><td>0</td><td class="rowtotal">77</td>
-      <td class="rowtotal">291</td>
-      <td class="row-actions"><button type="button" class="edit" data-id="mrx9spe7jhm9m">Edit</button><button type="button" class="del" data-id="mrx9spe7jhm9m">Delete</button></td>
-    </tr><tr>
-      <td class="left">2026-07-15</td><td>4</td>
-      <td class="bgroup-1">43</td><td>45</td><td>0</td><td class="rowtotal">88</td>
-      <td class="bgroup-2">37</td><td>35</td><td>48</td><td class="rowtotal">120</td>
-      <td class="bgroup-3">34</td><td>35</td><td>0</td><td class="rowtotal">69</td>
-      <td class="rowtotal">277</td>
-      <td class="row-actions"><button type="button" class="edit" data-id="mrx9spe7xf800">Edit</button><button type="button" class="del" data-id="mrx9spe7xf800">Delete</button></td>
-    </tr><tr>
-      <td class="left">2026-07-16</td><td>5</td>
-      <td class="bgroup-1">21</td><td>29</td><td>31</td><td class="rowtotal">81</td>
-      <td class="bgroup-2">29</td><td>33</td><td>0</td><td class="rowtotal">62</td>
-      <td class="bgroup-3">27</td><td>30</td><td>0</td><td class="rowtotal">57</td>
-      <td class="rowtotal">200</td>
-      <td class="row-actions"><button type="button" class="edit" data-id="mrx9spe7mwnk3">Edit</button><button type="button" class="del" data-id="mrx9spe7mwnk3">Delete</button></td>
-    </tr><tr>
-      <td class="left">2026-07-17</td><td>6</td>
-      <td class="bgroup-1">27</td><td>29</td><td>0</td><td class="rowtotal">56</td>
-      <td class="bgroup-2">29</td><td>24</td><td>0</td><td class="rowtotal">53</td>
-      <td class="bgroup-3">26</td><td>28</td><td>0</td><td class="rowtotal">54</td>
-      <td class="rowtotal">163</td>
-      <td class="row-actions"><button type="button" class="edit" data-id="mrx9spe7h4i63">Edit</button><button type="button" class="del" data-id="mrx9spe7h4i63">Delete</button></td>
-    </tr><tr>
-      <td class="left">2026-07-18</td><td>7</td>
-      <td class="bgroup-1">22</td><td>28</td><td>0</td><td class="rowtotal">50</td>
-      <td class="bgroup-2">26</td><td>27</td><td>0</td><td class="rowtotal">53</td>
-      <td class="bgroup-3">28</td><td>29</td><td>0</td><td class="rowtotal">57</td>
-      <td class="rowtotal">160</td>
-      <td class="row-actions"><button type="button" class="edit" data-id="mrx9spe7fpkgn">Edit</button><button type="button" class="del" data-id="mrx9spe7fpkgn">Delete</button></td>
-    </tr><tr>
-      <td class="left">2026-07-19</td><td>8</td>
-      <td class="bgroup-1">22</td><td>23</td><td>0</td><td class="rowtotal">45</td>
-      <td class="bgroup-2">24</td><td>20</td><td>0</td><td class="rowtotal">44</td>
-      <td class="bgroup-3">25</td><td>38</td><td>0</td><td class="rowtotal">63</td>
-      <td class="rowtotal">152</td>
-      <td class="row-actions"><button type="button" class="edit" data-id="mrx9spe76ap6s">Edit</button><button type="button" class="del" data-id="mrx9spe76ap6s">Delete</button></td>
-    </tr><tr>
-      <td class="left">2026-07-20</td><td>9</td>
-      <td class="bgroup-1">25</td><td>25</td><td>0</td><td class="rowtotal">50</td>
-      <td class="bgroup-2">20</td><td>30</td><td>0</td><td class="rowtotal">50</td>
-      <td class="bgroup-3">35</td><td>48</td><td>0</td><td class="rowtotal">83</td>
-      <td class="rowtotal">183</td>
-      <td class="row-actions"><button type="button" class="edit" data-id="mrx9spe7hk55l">Edit</button><button type="button" class="del" data-id="mrx9spe7hk55l">Delete</button></td>
-    </tr><tr>
-      <td class="left">2026-07-21</td><td>10</td>
-      <td class="bgroup-1">23</td><td>29</td><td>0</td><td class="rowtotal">52</td>
-      <td class="bgroup-2">34</td><td>31</td><td>0</td><td class="rowtotal">65</td>
-      <td class="bgroup-3">0</td><td>0</td><td>0</td><td class="rowtotal">0</td>
-      <td class="rowtotal">117</td>
-      <td class="row-actions"><button type="button" class="edit" data-id="mrx9spe7cgg2u">Edit</button><button type="button" class="del" data-id="mrx9spe7cgg2u">Delete</button></td>
-    </tr><tr>
-      <td class="left">2026-07-22</td><td>11</td>
-      <td class="bgroup-1">35</td><td>31</td><td>0</td><td class="rowtotal">66</td>
-      <td class="bgroup-2">0</td><td>0</td><td>0</td><td class="rowtotal">0</td>
-      <td class="bgroup-3">0</td><td>0</td><td>0</td><td class="rowtotal">0</td>
-      <td class="rowtotal">66</td>
-      <td class="row-actions"><button type="button" class="edit" data-id="mrx9spe7spzh1">Edit</button><button type="button" class="del" data-id="mrx9spe7spzh1">Delete</button></td>
-    </tr></tbody>
+        <tbody id="mort-body"></tbody>
       </table>
     </div>
     <div class="empty" id="mort-empty" style="display:none;">No entries yet. Add the first day's count above.</div>
@@ -349,32 +250,14 @@
       <div class="field"><label>Chick-in date</label><input type="date" data-setting="chickInDate"></div>
       <div class="field"><label>Total feeds delivered (bags)</label><input type="number" min="0" data-setting="feedsDelivered"></div>
     </div>
-    <div class="grid4" id="feeds-stats-grid">
-    <div class="card feeds">
-      <p class="bldg-label">Building 1 <span class="tag">FCR 1.275</span></p>
-      <div class="stat-row hl"><span>Bags consumed (total)</span><b>416</b></div>
-    </div>
-    <div class="card feeds">
-      <p class="bldg-label">Building 2 <span class="tag">FCR 1.165</span></p>
-      <div class="stat-row hl"><span>Bags consumed (total)</span><b>355</b></div>
-    </div>
-    <div class="card feeds">
-      <p class="bldg-label">Building 3 <span class="tag">FCR 1.529</span></p>
-      <div class="stat-row hl"><span>Bags consumed (total)</span><b>390</b></div>
-    </div><div class="card overall">
-      <p class="bldg-label">Overall <span class="tag">editable</span></p>
-      <div class="stat-row"><span>Delivered (bags)</span><input type="number" min="0" data-setting="feedsDelivered" style="width:90px; height:26px; text-align:right;"></div>
-      <div class="stat-row hl"><span>Consumed (bags)</span><input type="number" min="0" data-setting="feedsConsumedManual" style="width:90px; height:26px; text-align:right;"></div>
-      <div class="stat-row"><span>Remaining</span><b>1,089</b></div>
-      <div class="stat-row"><span>Total FCR</span><input type="number" min="0" step="0.001" data-setting="feedsFcrManual" style="width:90px; height:26px; text-align:right;"></div>
-    </div></div>
+    <div class="grid4" id="feeds-stats-grid"></div>
 
     <h2>Add a day's feed consumption</h2>
     <form class="entry" id="feeds-form">
       <div class="form-grid">
         <div class="field">
           <label for="f-date">Date</label>
-          <input type="date" id="f-date" required="">
+          <input type="date" id="f-date" required>
         </div>
         <div class="field">
           <label>Building 1</label>
@@ -399,7 +282,7 @@
         </div>
       </div>
       <div class="form-actions">
-        <button type="button" class="secondary" id="f-cancel" style="display: none;">Cancel edit</button>
+        <button type="button" class="secondary" id="f-cancel" style="display:none;">Cancel edit</button>
         <button type="submit" id="f-submit">Add entry</button>
       </div>
       <div class="status" id="f-status"></div>
@@ -417,84 +300,7 @@
             <th class="bgroup-all">All bags</th><th>Cum. bags</th><th class="no-print"></th>
           </tr>
         </thead>
-        <tbody id="feeds-body"><tr>
-      <td class="left">2026-07-12</td><td>1</td>
-      <td class="bgroup-1">63</td><td>0.954</td>
-      <td class="bgroup-2">58</td><td>0.821</td>
-      <td class="bgroup-3">65</td><td>0.963</td>
-      <td class="bgroup-all rowtotal">186</td><td class="rowtotal">186</td>
-      <td class="row-actions"><button type="button" class="edit" data-id="mrx9spe767bam">Edit</button><button type="button" class="del" data-id="mrx9spe767bam">Delete</button></td>
-    </tr><tr>
-      <td class="left">2026-07-13</td><td>2</td>
-      <td class="bgroup-1">17</td><td>1</td>
-      <td class="bgroup-2">17</td><td>0.88</td>
-      <td class="bgroup-3">15</td><td>1.033</td>
-      <td class="bgroup-all rowtotal">49</td><td class="rowtotal">235</td>
-      <td class="row-actions"><button type="button" class="edit" data-id="mrx9spe7mhran">Edit</button><button type="button" class="del" data-id="mrx9spe7mhran">Delete</button></td>
-    </tr><tr>
-      <td class="left">2026-07-14</td><td>3</td>
-      <td class="bgroup-1">20</td><td>1.06</td>
-      <td class="bgroup-2">21</td><td>0.923</td>
-      <td class="bgroup-3">20</td><td>1.039</td>
-      <td class="bgroup-all rowtotal">61</td><td class="rowtotal">296</td>
-      <td class="row-actions"><button type="button" class="edit" data-id="mrx9spe79fkh9">Edit</button><button type="button" class="del" data-id="mrx9spe79fkh9">Delete</button></td>
-    </tr><tr>
-      <td class="left">2026-07-15</td><td>4</td>
-      <td class="bgroup-1">20</td><td>0.978</td>
-      <td class="bgroup-2">23</td><td>0.941</td>
-      <td class="bgroup-3">50</td><td>1.192</td>
-      <td class="bgroup-all rowtotal">93</td><td class="rowtotal">389</td>
-      <td class="row-actions"><button type="button" class="edit" data-id="mrx9spe7mvkkr">Edit</button><button type="button" class="del" data-id="mrx9spe7mvkkr">Delete</button></td>
-    </tr><tr>
-      <td class="left">2026-07-16</td><td>5</td>
-      <td class="bgroup-1">30</td><td>1.064</td>
-      <td class="bgroup-2">41</td><td>1.061</td>
-      <td class="bgroup-3">0</td><td>1.068</td>
-      <td class="bgroup-all rowtotal">71</td><td class="rowtotal">460</td>
-      <td class="row-actions"><button type="button" class="edit" data-id="mrx9spe7uw5ug">Edit</button><button type="button" class="del" data-id="mrx9spe7uw5ug">Delete</button></td>
-    </tr><tr>
-      <td class="left">2026-07-17</td><td>6</td>
-      <td class="bgroup-1">45</td><td>1.133</td>
-      <td class="bgroup-2">17</td><td>1.011</td>
-      <td class="bgroup-3">50</td><td>1.185</td>
-      <td class="bgroup-all rowtotal">112</td><td class="rowtotal">572</td>
-      <td class="row-actions"><button type="button" class="edit" data-id="mrx9spe7s1k8u">Edit</button><button type="button" class="del" data-id="mrx9spe7s1k8u">Delete</button></td>
-    </tr><tr>
-      <td class="left">2026-07-18</td><td>7</td>
-      <td class="bgroup-1">15</td><td>1.078</td>
-      <td class="bgroup-2">74</td><td>1.306</td>
-      <td class="bgroup-3">25</td><td>1.135</td>
-      <td class="bgroup-all rowtotal">114</td><td class="rowtotal">686</td>
-      <td class="row-actions"><button type="button" class="edit" data-id="mrx9spe7scx65">Edit</button><button type="button" class="del" data-id="mrx9spe7scx65">Delete</button></td>
-    </tr><tr>
-      <td class="left">2026-07-19</td><td>8</td>
-      <td class="bgroup-1">46</td><td>1.195</td>
-      <td class="bgroup-2">20</td><td>1.271</td>
-      <td class="bgroup-3">75</td><td>1.351</td>
-      <td class="bgroup-all rowtotal">141</td><td class="rowtotal">827</td>
-      <td class="row-actions"><button type="button" class="edit" data-id="mrx9spe7onwsp">Edit</button><button type="button" class="del" data-id="mrx9spe7onwsp">Delete</button></td>
-    </tr><tr>
-      <td class="left">2026-07-20</td><td>9</td>
-      <td class="bgroup-1">30</td><td>1.189</td>
-      <td class="bgroup-2">50</td><td>1.284</td>
-      <td class="bgroup-3">90</td><td>1.529</td>
-      <td class="bgroup-all rowtotal">170</td><td class="rowtotal">997</td>
-      <td class="row-actions"><button type="button" class="edit" data-id="mrx9spe71fja2">Edit</button><button type="button" class="del" data-id="mrx9spe71fja2">Delete</button></td>
-    </tr><tr>
-      <td class="left">2026-07-21</td><td>10</td>
-      <td class="bgroup-1">65</td><td>1.301</td>
-      <td class="bgroup-2">34</td><td>1.165</td>
-      <td class="bgroup-3">0</td><td>0</td>
-      <td class="bgroup-all rowtotal">99</td><td class="rowtotal">1096</td>
-      <td class="row-actions"><button type="button" class="edit" data-id="mrx9spe7ho7eu">Edit</button><button type="button" class="del" data-id="mrx9spe7ho7eu">Delete</button></td>
-    </tr><tr>
-      <td class="left">2026-07-22</td><td>11</td>
-      <td class="bgroup-1">65</td><td>1.275</td>
-      <td class="bgroup-2">0</td><td>0</td>
-      <td class="bgroup-3">0</td><td>0</td>
-      <td class="bgroup-all rowtotal">65</td><td class="rowtotal">1161</td>
-      <td class="row-actions"><button type="button" class="edit" data-id="mrx9spe7s18ok">Edit</button><button type="button" class="del" data-id="mrx9spe7s18ok">Delete</button></td>
-    </tr></tbody>
+        <tbody id="feeds-body"></tbody>
       </table>
     </div>
     <div class="empty" id="feeds-empty" style="display:none;">No entries yet. Add the first day's feed count above.</div>
@@ -505,26 +311,14 @@
     <div class="settings-bar">
       <div class="field"><label>Chick-in date</label><input type="date" data-setting="chickInDate"></div>
     </div>
-    <div class="grid4" id="alw-stats-grid"><div class="card">
-      <p class="bldg-label">Building 1 <span class="tag"></span></p>
-      <div class="stat-row hl"><span>Latest ALW</span><b>249.8 g</b></div>
-    </div><div class="card">
-      <p class="bldg-label">Building 2 <span class="tag"></span></p>
-      <div class="stat-row hl"><span>Latest ALW</span><b>282.2 g</b></div>
-    </div><div class="card">
-      <p class="bldg-label">Building 3 <span class="tag"></span></p>
-      <div class="stat-row hl"><span>Latest ALW</span><b>235.1 g</b></div>
-    </div><div class="card overall">
-      <p class="bldg-label">Average <span class="tag">ADG 26.1 g/day</span></p>
-      <div class="stat-row hl"><span>Latest avg ALW</span><b>255.7 g</b></div>
-    </div></div>
+    <div class="grid4" id="alw-stats-grid"></div>
 
     <h2>Add a day's average live weight (grams)</h2>
     <form class="entry" id="alw-form">
       <div class="form-grid">
         <div class="field">
           <label for="a-date">Date</label>
-          <input type="date" id="a-date" required="">
+          <input type="date" id="a-date" required>
         </div>
         <div class="field">
           <label>Building 1</label>
@@ -549,7 +343,7 @@
         </div>
       </div>
       <div class="form-actions">
-        <button type="button" class="secondary" id="a-cancel" style="display: none;">Cancel edit</button>
+        <button type="button" class="secondary" id="a-cancel" style="display:none;">Cancel edit</button>
         <button type="submit" id="a-submit">Add entry</button>
       </div>
       <div class="status" id="a-status"></div>
@@ -565,84 +359,7 @@
             <th class="bgroup-all">Avg ALW</th><th>ADG</th><th>vs target</th><th class="no-print"></th>
           </tr>
         </thead>
-        <tbody id="alw-body"><tr>
-      <td class="left">2026-07-11</td><td>0</td>
-      <td class="bgroup-1">44.8</td><td class="bgroup-2">45.6</td><td class="bgroup-3">45.0</td>
-      <td class="bgroup-all rowtotal">45.2</td>
-      <td>—</td>
-      <td>3.2</td>
-      <td class="row-actions"><button type="button" class="edit" data-id="mrx9spe7f0yfs">Edit</button><button type="button" class="del" data-id="mrx9spe7f0yfs">Delete</button></td>
-    </tr><tr>
-      <td class="left">2026-07-12</td><td>1</td>
-      <td class="bgroup-1">60.4</td><td class="bgroup-2">64.6</td><td class="bgroup-3">61.6</td>
-      <td class="bgroup-all rowtotal">62.2</td>
-      <td>17.1</td>
-      <td>—</td>
-      <td class="row-actions"><button type="button" class="edit" data-id="mrx9spe78rexv">Edit</button><button type="button" class="del" data-id="mrx9spe78rexv">Delete</button></td>
-    </tr><tr>
-      <td class="left">2026-07-13</td><td>2</td>
-      <td class="bgroup-1">73.3</td><td class="bgroup-2">78.1</td><td class="bgroup-3">70.7</td>
-      <td class="bgroup-all rowtotal">74.1</td>
-      <td>11.8</td>
-      <td>—</td>
-      <td class="row-actions"><button type="button" class="edit" data-id="mrx9spe739ys2">Edit</button><button type="button" class="del" data-id="mrx9spe739ys2">Delete</button></td>
-    </tr><tr>
-      <td class="left">2026-07-14</td><td>3</td>
-      <td class="bgroup-1">86.5</td><td class="bgroup-2">95.5</td><td class="bgroup-3">88.1</td>
-      <td class="bgroup-all rowtotal">90.0</td>
-      <td>16.0</td>
-      <td>—</td>
-      <td class="row-actions"><button type="button" class="edit" data-id="mrx9spe7gz6ij">Edit</button><button type="button" class="del" data-id="mrx9spe7gz6ij">Delete</button></td>
-    </tr><tr>
-      <td class="left">2026-07-15</td><td>4</td>
-      <td class="bgroup-1">112.9</td><td class="bgroup-2">116.4</td><td class="bgroup-3">115.3</td>
-      <td class="bgroup-all rowtotal">114.8</td>
-      <td>24.8</td>
-      <td>—</td>
-      <td class="row-actions"><button type="button" class="edit" data-id="mrx9spe78pt9a">Edit</button><button type="button" class="del" data-id="mrx9spe78pt9a">Delete</button></td>
-    </tr><tr>
-      <td class="left">2026-07-16</td><td>5</td>
-      <td class="bgroup-1">129.8</td><td class="bgroup-2">138.9</td><td class="bgroup-3">128.9</td>
-      <td class="bgroup-all rowtotal">132.5</td>
-      <td>17.7</td>
-      <td>—</td>
-      <td class="row-actions"><button type="button" class="edit" data-id="mrx9spe7i6rvn">Edit</button><button type="button" class="del" data-id="mrx9spe7i6rvn">Delete</button></td>
-    </tr><tr>
-      <td class="left">2026-07-17</td><td>6</td>
-      <td class="bgroup-1">158.8</td><td class="bgroup-2">161.4</td><td class="bgroup-3">155.0</td>
-      <td class="bgroup-all rowtotal">158.4</td>
-      <td>25.8</td>
-      <td>—</td>
-      <td class="row-actions"><button type="button" class="edit" data-id="mrx9spe7d2m38">Edit</button><button type="button" class="del" data-id="mrx9spe7d2m38">Delete</button></td>
-    </tr><tr>
-      <td class="left">2026-07-18</td><td>7</td>
-      <td class="bgroup-1">179.8</td><td class="bgroup-2">177.4</td><td class="bgroup-3">182.2</td>
-      <td class="bgroup-all rowtotal">179.8</td>
-      <td>21.4</td>
-      <td>—</td>
-      <td class="row-actions"><button type="button" class="edit" data-id="mrx9spe7abs56">Edit</button><button type="button" class="del" data-id="mrx9spe7abs56">Delete</button></td>
-    </tr><tr>
-      <td class="left">2026-07-19</td><td>8</td>
-      <td class="bgroup-1">197.9</td><td class="bgroup-2">197.0</td><td class="bgroup-3">204.4</td>
-      <td class="bgroup-all rowtotal">199.8</td>
-      <td>20.0</td>
-      <td>—</td>
-      <td class="row-actions"><button type="button" class="edit" data-id="mrx9spe7krbs6">Edit</button><button type="button" class="del" data-id="mrx9spe7krbs6">Delete</button></td>
-    </tr><tr>
-      <td class="left">2026-07-20</td><td>9</td>
-      <td class="bgroup-1">222.5</td><td class="bgroup-2">231.2</td><td class="bgroup-3">235.1</td>
-      <td class="bgroup-all rowtotal">229.6</td>
-      <td>29.8</td>
-      <td>—</td>
-      <td class="row-actions"><button type="button" class="edit" data-id="mrx9spe7mpir0">Edit</button><button type="button" class="del" data-id="mrx9spe7mpir0">Delete</button></td>
-    </tr><tr>
-      <td class="left">2026-07-21</td><td>10</td>
-      <td class="bgroup-1">249.8</td><td class="bgroup-2">282.2</td><td class="bgroup-3">235.1</td>
-      <td class="bgroup-all rowtotal">255.7</td>
-      <td>26.1</td>
-      <td>—</td>
-      <td class="row-actions"><button type="button" class="edit" data-id="mrx9spe740j8l">Edit</button><button type="button" class="del" data-id="mrx9spe740j8l">Delete</button></td>
-    </tr></tbody>
+        <tbody id="alw-body"></tbody>
       </table>
     </div>
     <div class="empty" id="alw-empty" style="display:none;">No entries yet. Add the first day's weight above.</div>
@@ -655,41 +372,16 @@
       <div class="field"><label>Beginning inv. B1</label><input type="number" min="0" data-setting="beginB1"></div>
       <div class="field"><label>Beginning inv. B2</label><input type="number" min="0" data-setting="beginB2"></div>
       <div class="field"><label>Beginning inv. B3</label><input type="number" min="0" data-setting="beginB3"></div>
-      <div class="field"><label>Total beginning inv.</label><div id="h-begin-total" style="height:34px;display:flex;align-items:center;font-weight:600;">164,480</div></div>
+      <div class="field"><label>Total beginning inv.</label><div id="h-begin-total" style="height:34px;display:flex;align-items:center;font-weight:600;">0</div></div>
     </div>
-    <div class="grid4" id="harvest-stats-grid">
-    <div class="card">
-      <p class="bldg-label">Building 1 <span class="tag"></span></p>
-      <div class="stat-row"><span>Kilos</span><b>0.0</b></div>
-      <div class="stat-row hl"><span>Heads</span><b>0</b></div>
-    </div>
-    <div class="card">
-      <p class="bldg-label">Building 2 <span class="tag"></span></p>
-      <div class="stat-row"><span>Kilos</span><b>0.0</b></div>
-      <div class="stat-row hl"><span>Heads</span><b>0</b></div>
-    </div>
-    <div class="card">
-      <p class="bldg-label">Building 3 <span class="tag"></span></p>
-      <div class="stat-row"><span>Kilos</span><b>0.0</b></div>
-      <div class="stat-row hl"><span>Heads</span><b>0</b></div>
-    </div><div class="card overall">
-      <p class="bldg-label">Overall <span class="tag"></span></p>
-      <div class="stat-row"><span>Total kilos</span><b>0.0</b></div>
-      <div class="stat-row hl"><span>Total heads</span><b>0</b></div>
-      <div class="stat-row"><span>Flock remaining</span><b>162,126</b></div>
-    </div><div class="card feeds">
-      <p class="bldg-label">Running metrics</p>
-      <div class="stat-row"><span>Running HR</span><b>98.57%</b></div>
-      <div class="stat-row hl"><span>Running FCR</span><b>—</b></div>
-      <div class="stat-row"><span>Running ALW</span><b>—</b></div>
-    </div></div>
+    <div class="grid4" id="harvest-stats-grid"></div>
 
     <h2>Add a harvest pull</h2>
     <form class="entry" id="harvest-form">
       <div class="form-grid" style="grid-template-columns: 140px 120px repeat(2, 1fr);">
         <div class="field">
           <label for="h-date">Date</label>
-          <input type="date" id="h-date" required="">
+          <input type="date" id="h-date" required>
         </div>
         <div class="field">
           <label for="h-bldg">Building</label>
@@ -726,7 +418,7 @@
         <tbody id="harvest-body"></tbody>
       </table>
     </div>
-    <div class="empty" id="harvest-empty" style="display: block;">No harvest pulls recorded yet.</div>
+    <div class="empty" id="harvest-empty" style="display:none;">No harvest pulls recorded yet.</div>
   </div>
 
   <!-- SUMMARY TAB -->
@@ -740,18 +432,18 @@
         <div class="summary-col">
           <div class="summary-row"><span>Batch:</span><b><input type="text" class="inline-edit" data-setting="batchNumber" style="width:40px;"></b></div>
           <div class="summary-row"><span>Grow #:</span><b><input type="text" class="inline-edit" data-setting="growNumber" style="width:24px;">, <input type="text" class="inline-edit" data-setting="growYear" style="width:48px;"></b></div>
-          <div class="summary-row"><span>Beginning Inventory:</span><b id="sum-begin">164,480</b></div>
-          <div class="summary-row"><span>Feeds Delivered:</span><b id="sum-delivered">2,250</b></div>
-          <div class="summary-row"><span>Feeds Consumed:</span><b id="sum-consumed">1,161</b></div>
-          <div class="summary-row"><span>Remaining Feeds:</span><b id="sum-remaining-feeds">1,089</b></div>
-          <div class="summary-row"><span>T. Inventory:</span><b id="sum-tinventory">164,480</b></div>
-          <div class="summary-row"><span>T. Kilos:</span><b id="sum-tkilos">0.0</b></div>
+          <div class="summary-row"><span>Beginning Inventory:</span><b id="sum-begin">0</b></div>
+          <div class="summary-row"><span>Feeds Delivered:</span><b id="sum-delivered">0</b></div>
+          <div class="summary-row"><span>Feeds Consumed:</span><b id="sum-consumed">0</b></div>
+          <div class="summary-row"><span>Remaining Feeds:</span><b id="sum-remaining-feeds">0</b></div>
+          <div class="summary-row"><span>T. Inventory:</span><b id="sum-tinventory">0</b></div>
+          <div class="summary-row"><span>T. Kilos:</span><b id="sum-tkilos">0</b></div>
           <div class="summary-row"><span>T. Harvest (heads):</span><b id="sum-tharvest">0</b></div>
-          <div class="summary-row"><span>T. Remaining runts:</span><b id="sum-remaining-runts">162,126</b></div>
-          <div class="summary-row"><span>Mortality:</span><b id="sum-mortality">2,354</b></div>
+          <div class="summary-row"><span>T. Remaining runts:</span><b id="sum-remaining-runts">0</b></div>
+          <div class="summary-row"><span>Mortality:</span><b id="sum-mortality">0</b></div>
         </div>
         <div class="summary-col">
-          <div class="summary-row"><span>Running HR:</span><b id="sum-hr">98.57%</b></div>
+          <div class="summary-row"><span>Running HR:</span><b id="sum-hr">0%</b></div>
           <div class="summary-row"><span>Running FCR:</span><b id="sum-fcr">—</b></div>
           <div class="summary-row"><span>Running ALW:</span><b id="sum-alw">—</b></div>
         </div>
@@ -761,16 +453,30 @@
 
 </div>
 
+<div id="save-toast"></div>
+
+<div class="modal-overlay" id="pin-modal">
+  <div class="modal-box">
+    <h3>Unlock editing</h3>
+    <input type="password" id="pin-input" placeholder="Enter PIN" inputmode="numeric">
+    <div class="modal-error" id="pin-error"></div>
+    <div class="modal-actions">
+      <button type="button" class="secondary" id="pin-cancel">Cancel</button>
+      <button type="button" id="pin-confirm">Unlock</button>
+    </div>
+  </div>
+</div>
+
 <script>
 const SETTINGS_KEY = 'batch-settings-batch20';
-const SETTINGS_DEFAULT = { chickInDate: '2026-07-11', beginB1: 54776, beginB2: 54860, beginB3: 54844, feedsDelivered: 2250, feedsConsumedManual: 1121, feedsFcrManual: 1.1215, batchNumber: '20', growNumber: '4', growYear: '2026' };
+const SETTINGS_DEFAULT = { chickInDate: '2026-07-11', beginB1: 54776, beginB2: 54860, beginB3: 54844, feedsDelivered: 2250, feedsConsumedManual: 1161, feedsFcrManual: 1.163, batchNumber: '20', growNumber: '4', growYear: '2026' };
 let SETTINGS = { ...SETTINGS_DEFAULT };
 
-const MORT_SEED = [{"date": "2026-07-11", "b1_am": 0, "b1_pm": 22, "b1_cond": 0, "b2_am": 0, "b2_pm": 27, "b2_cond": 0, "b3_am": 0, "b3_pm": 31, "b3_cond": 0}, {"date": "2026-07-12", "b1_am": 52, "b1_pm": 60, "b1_cond": 0, "b2_am": 65, "b2_pm": 88, "b2_cond": 0, "b3_am": 34, "b3_pm": 37, "b3_cond": 0}, {"date": "2026-07-13", "b1_am": 48, "b1_pm": 53, "b1_cond": 0, "b2_am": 54, "b2_pm": 41, "b2_cond": 63, "b3_am": 35, "b3_pm": 35, "b3_cond": 0}, {"date": "2026-07-14", "b1_am": 50, "b1_pm": 38, "b1_cond": 38, "b2_am": 50, "b2_pm": 38, "b2_cond": 0, "b3_am": 42, "b3_pm": 35, "b3_cond": 0}, {"date": "2026-07-15", "b1_am": 43, "b1_pm": 45, "b1_cond": 0, "b2_am": 37, "b2_pm": 35, "b2_cond": 48, "b3_am": 34, "b3_pm": 35, "b3_cond": 0}, {"date": "2026-07-16", "b1_am": 21, "b1_pm": 29, "b1_cond": 31, "b2_am": 29, "b2_pm": 33, "b2_cond": 0, "b3_am": 27, "b3_pm": 30, "b3_cond": 0}, {"date": "2026-07-17", "b1_am": 27, "b1_pm": 29, "b1_cond": 0, "b2_am": 29, "b2_pm": 24, "b2_cond": 0, "b3_am": 26, "b3_pm": 28, "b3_cond": 0}, {"date": "2026-07-18", "b1_am": 22, "b1_pm": 28, "b1_cond": 0, "b2_am": 26, "b2_pm": 27, "b2_cond": 0, "b3_am": 28, "b3_pm": 29, "b3_cond": 0}, {"date": "2026-07-19", "b1_am": 22, "b1_pm": 23, "b1_cond": 0, "b2_am": 24, "b2_pm": 20, "b2_cond": 0, "b3_am": 25, "b3_pm": 38, "b3_cond": 0}, {"date": "2026-07-20", "b1_am": 25, "b1_pm": 25, "b1_cond": 0, "b2_am": 20, "b2_pm": 30, "b2_cond": 0, "b3_am": 35, "b3_pm": 0, "b3_cond": 0}, {"date": "2026-07-21", "b1_am": 23, "b1_pm": 29, "b1_cond": 0, "b2_am": 34, "b2_pm": 0, "b2_cond": 0, "b3_am": 0, "b3_pm": 0, "b3_cond": 0}, {"date": "2026-07-22", "b1_am": 35, "b1_pm": 0, "b1_cond": 0, "b2_am": 0, "b2_pm": 0, "b2_cond": 0, "b3_am": 0, "b3_pm": 0, "b3_cond": 0}];
+const MORT_SEED = [{"date": "2026-07-11", "b1_am": 0, "b1_pm": 22, "b1_cond": 0, "b2_am": 0, "b2_pm": 27, "b2_cond": 0, "b3_am": 0, "b3_pm": 31, "b3_cond": 0}, {"date": "2026-07-12", "b1_am": 52, "b1_pm": 60, "b1_cond": 0, "b2_am": 65, "b2_pm": 88, "b2_cond": 0, "b3_am": 34, "b3_pm": 37, "b3_cond": 0}, {"date": "2026-07-13", "b1_am": 48, "b1_pm": 53, "b1_cond": 0, "b2_am": 54, "b2_pm": 41, "b2_cond": 63, "b3_am": 35, "b3_pm": 35, "b3_cond": 0}, {"date": "2026-07-14", "b1_am": 50, "b1_pm": 38, "b1_cond": 38, "b2_am": 50, "b2_pm": 38, "b2_cond": 0, "b3_am": 42, "b3_pm": 35, "b3_cond": 0}, {"date": "2026-07-15", "b1_am": 43, "b1_pm": 45, "b1_cond": 0, "b2_am": 37, "b2_pm": 35, "b2_cond": 48, "b3_am": 34, "b3_pm": 35, "b3_cond": 0}, {"date": "2026-07-16", "b1_am": 21, "b1_pm": 29, "b1_cond": 31, "b2_am": 29, "b2_pm": 33, "b2_cond": 0, "b3_am": 27, "b3_pm": 30, "b3_cond": 0}, {"date": "2026-07-17", "b1_am": 27, "b1_pm": 29, "b1_cond": 0, "b2_am": 29, "b2_pm": 24, "b2_cond": 0, "b3_am": 26, "b3_pm": 28, "b3_cond": 0}, {"date": "2026-07-18", "b1_am": 22, "b1_pm": 28, "b1_cond": 0, "b2_am": 26, "b2_pm": 27, "b2_cond": 0, "b3_am": 28, "b3_pm": 29, "b3_cond": 0}, {"date": "2026-07-19", "b1_am": 22, "b1_pm": 23, "b1_cond": 0, "b2_am": 24, "b2_pm": 20, "b2_cond": 0, "b3_am": 25, "b3_pm": 38, "b3_cond": 0}, {"date": "2026-07-20", "b1_am": 25, "b1_pm": 25, "b1_cond": 0, "b2_am": 20, "b2_pm": 30, "b2_cond": 0, "b3_am": 35, "b3_pm": 48, "b3_cond": 0}, {"date": "2026-07-21", "b1_am": 23, "b1_pm": 29, "b1_cond": 0, "b2_am": 34, "b2_pm": 31, "b2_cond": 0, "b3_am": 0, "b3_pm": 0, "b3_cond": 0}, {"date": "2026-07-22", "b1_am": 35, "b1_pm": 31, "b1_cond": 0, "b2_am": 0, "b2_pm": 0, "b2_cond": 0, "b3_am": 0, "b3_pm": 0, "b3_cond": 0}];
 
-const FEEDS_SEED = [{"b1_bags": 63, "b1_fcr": 0.954, "b2_bags": 58, "b2_fcr": 0.821, "b3_bags": 65, "b3_fcr": 0.963, "date": "2026-07-12"}, {"b1_bags": 17, "b1_fcr": 1, "b2_bags": 17, "b2_fcr": 0.88, "b3_bags": 15, "b3_fcr": 1.033, "date": "2026-07-13"}, {"b1_bags": 20, "b1_fcr": 1.06, "b2_bags": 21, "b2_fcr": 0.923, "b3_bags": 20, "b3_fcr": 1.039, "date": "2026-07-14"}, {"b1_bags": 20, "b1_fcr": 0.978, "b2_bags": 23, "b2_fcr": 0.941, "b3_bags": 50, "b3_fcr": 1.192, "date": "2026-07-15"}, {"b1_bags": 30, "b1_fcr": 1.064, "b2_bags": 41, "b2_fcr": 1.061, "b3_bags": 0, "b3_fcr": 1.068, "date": "2026-07-16"}, {"b1_bags": 45, "b1_fcr": 1.133, "b2_bags": 17, "b2_fcr": 1.011, "b3_bags": 50, "b3_fcr": 1.185, "date": "2026-07-17"}, {"b1_bags": 15, "b1_fcr": 1.078, "b2_bags": 74, "b2_fcr": 1.306, "b3_bags": 25, "b3_fcr": 1.135, "date": "2026-07-18"}, {"b1_bags": 46, "b1_fcr": 1.195, "b2_bags": 20, "b2_fcr": 1.271, "b3_bags": 75, "b3_fcr": 1.351, "date": "2026-07-19"}, {"b1_bags": 30, "b1_fcr": 1.189, "b2_bags": 50, "b2_fcr": 1.284, "b3_bags": 90, "b3_fcr": 0, "date": "2026-07-20"}, {"b1_bags": 65, "b1_fcr": 1.301, "b2_bags": 24, "b2_fcr": 0, "b3_bags": 0, "b3_fcr": 0, "date": "2026-07-21"}, {"b1_bags": 35, "b1_fcr": 0, "b2_bags": 0, "b2_fcr": 0, "b3_bags": 0, "b3_fcr": 0, "date": "2026-07-22"}];
+const FEEDS_SEED = [{"b1_bags": 63, "b1_fcr": 0.954, "b2_bags": 58, "b2_fcr": 0.821, "b3_bags": 65, "b3_fcr": 0.963, "date": "2026-07-12"}, {"b1_bags": 17, "b1_fcr": 1, "b2_bags": 17, "b2_fcr": 0.88, "b3_bags": 15, "b3_fcr": 1.033, "date": "2026-07-13"}, {"b1_bags": 20, "b1_fcr": 1.06, "b2_bags": 21, "b2_fcr": 0.923, "b3_bags": 20, "b3_fcr": 1.039, "date": "2026-07-14"}, {"b1_bags": 20, "b1_fcr": 0.978, "b2_bags": 23, "b2_fcr": 0.941, "b3_bags": 50, "b3_fcr": 1.192, "date": "2026-07-15"}, {"b1_bags": 30, "b1_fcr": 1.064, "b2_bags": 41, "b2_fcr": 1.061, "b3_bags": 0, "b3_fcr": 1.068, "date": "2026-07-16"}, {"b1_bags": 45, "b1_fcr": 1.133, "b2_bags": 17, "b2_fcr": 1.011, "b3_bags": 50, "b3_fcr": 1.185, "date": "2026-07-17"}, {"b1_bags": 15, "b1_fcr": 1.078, "b2_bags": 74, "b2_fcr": 1.306, "b3_bags": 25, "b3_fcr": 1.135, "date": "2026-07-18"}, {"b1_bags": 46, "b1_fcr": 1.195, "b2_bags": 20, "b2_fcr": 1.271, "b3_bags": 75, "b3_fcr": 1.351, "date": "2026-07-19"}, {"b1_bags": 30, "b1_fcr": 1.189, "b2_bags": 50, "b2_fcr": 1.284, "b3_bags": 90, "b3_fcr": 1.529, "date": "2026-07-20"}, {"b1_bags": 65, "b1_fcr": 1.301, "b2_bags": 34, "b2_fcr": 1.165, "b3_bags": 0, "b3_fcr": 0, "date": "2026-07-21"}, {"b1_bags": 65, "b1_fcr": 1.275, "b2_bags": 0, "b2_fcr": 0, "b3_bags": 0, "b3_fcr": 0, "date": "2026-07-22"}];
 
-const ALW_SEED = [{"b1": 44.8, "b2": 45.64, "b3": 45.04, "std_alw": 42, "date": "2026-07-11"}, {"b1": 60.4, "b2": 64.64, "b3": 61.6, "std_alw": 56, "date": "2026-07-12"}, {"b1": 73.32, "b2": 78.12, "b3": 70.72, "std_alw": 72, "date": "2026-07-13"}, {"b1": 86.52, "b2": 95.52, "b3": 88.08, "std_alw": 89, "date": "2026-07-14"}, {"b1": 112.88, "b2": 116.36, "b3": 115.3, "std_alw": 109, "date": "2026-07-15"}, {"b1": 129.84, "b2": 138.88, "b3": 128.9, "std_alw": 131, "date": "2026-07-16"}, {"b1": 158.8, "b2": 161.36, "b3": 155, "std_alw": 157, "date": "2026-07-17"}, {"b1": 179.76, "b2": 177.44, "b3": 182.2, "std_alw": 185, "date": "2026-07-18"}, {"b1": 197.92, "b2": 197.04, "b3": 204.4, "std_alw": 215, "date": "2026-07-19"}, {"b1": 222.48, "b2": 231.2, "b3": 0, "std_alw": 247, "date": "2026-07-20"}, {"b1": 249.84, "b2": 0, "b3": 0, "std_alw": 283, "date": "2026-07-21"}];
+const ALW_SEED = [{"b1": 44.8, "b2": 45.64, "b3": 45.04, "std_alw": 42, "date": "2026-07-11"}, {"b1": 60.4, "b2": 64.64, "b3": 61.6, "std_alw": 56, "date": "2026-07-12"}, {"b1": 73.32, "b2": 78.12, "b3": 70.72, "std_alw": 72, "date": "2026-07-13"}, {"b1": 86.52, "b2": 95.52, "b3": 88.08, "std_alw": 89, "date": "2026-07-14"}, {"b1": 112.88, "b2": 116.36, "b3": 115.3, "std_alw": 109, "date": "2026-07-15"}, {"b1": 129.84, "b2": 138.88, "b3": 128.9, "std_alw": 131, "date": "2026-07-16"}, {"b1": 158.8, "b2": 161.36, "b3": 155, "std_alw": 157, "date": "2026-07-17"}, {"b1": 179.76, "b2": 177.44, "b3": 182.2, "std_alw": 185, "date": "2026-07-18"}, {"b1": 197.92, "b2": 197.04, "b3": 204.4, "std_alw": 215, "date": "2026-07-19"}, {"b1": 222.48, "b2": 231.2, "b3": 235.1, "std_alw": 247, "date": "2026-07-20"}, {"b1": 249.84, "b2": 282.16, "b3": 235.1, "std_alw": 283, "date": "2026-07-21"}, {"b1": 302.48, "b2": 0, "b3": 0, "std_alw": 321, "date": "2026-07-22"}];
 
 function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2,7); }
 function fmt(n) { return (n||0).toLocaleString(); }
@@ -779,9 +485,37 @@ function dayNumber(dateStr) {
   const d = new Date(dateStr);
   return Math.round((d - start) / 86400000);
 }
+function showToast(msg, isError) {
+  const toast = document.getElementById('save-toast');
+  toast.textContent = msg;
+  toast.className = isError ? 'error show' : 'show';
+  clearTimeout(showToast._t);
+  showToast._t = setTimeout(() => { toast.classList.remove('show'); }, 2200);
+}
+/* Writes then reads back to confirm the storage actually kept it — a plain
+   resolved promise from set() isn't proof it persisted. */
+async function saveWithVerify(key, dataStr, statusElId) {
+  try {
+    await storageAPI.set(key, dataStr, true);
+    const check = await storageAPI.get(key, true);
+    if (check && check.value === dataStr) {
+      showToast('✓ Saved');
+      return true;
+    }
+    showToast('⚠ Save not verified', true);
+    if (statusElId) document.getElementById(statusElId).textContent = 'Saved, but could not verify it stuck — reopen this app from the latest message and check again.';
+    return false;
+  } catch (e) {
+    showToast('⚠ Could not save', true);
+    if (statusElId) document.getElementById(statusElId).textContent = 'Could not save — changes may not persist.';
+    return false;
+  }
+}
 
-/* ---------- storage: use Claude's shared window.storage when available, ----------
-   fall back to this browser's localStorage when opened as a standalone file ---------- */
+/* ---------- storage: shared window.storage when available (multi-device, ----------
+   shared across everyone who opens this artifact), falling back to this
+   browser's own localStorage only if window.storage isn't available at all
+   (e.g. opened as a downloaded standalone file). ---------- */
 const usingLocalFallback = (typeof window.storage === 'undefined');
 const storageAPI = usingLocalFallback ? {
   async get(key) {
@@ -794,10 +528,12 @@ const storageAPI = usingLocalFallback ? {
   }
 } : window.storage;
 
-if (usingLocalFallback) {
+{
   const note = document.getElementById('storage-mode-note');
   note.style.display = 'block';
-  note.textContent = 'Saving to this browser only (not shared with others) — open via Claude to share data with your team.';
+  note.textContent = usingLocalFallback
+    ? 'Saved to this browser only — not shared with others.'
+    : 'Shared data — anyone who opens this app sees the same saved entries.';
 }
 
 /* ---------- SETTINGS ---------- */
@@ -814,8 +550,7 @@ async function hasSettings() {
   catch (e) { return false; }
 }
 async function settingsSave() {
-  try { await storageAPI.set(SETTINGS_KEY, JSON.stringify(SETTINGS), true); }
-  catch (e) { /* best effort */ }
+  await saveWithVerify(SETTINGS_KEY, JSON.stringify(SETTINGS));
 }
 function syncSettingFields() {
   document.querySelectorAll('[data-setting]').forEach(el => {
@@ -829,13 +564,17 @@ function updateBeginTotals() {
   const m = document.getElementById('m-begin-total'); if (m) m.textContent = total;
   const h = document.getElementById('h-begin-total'); if (h) h.textContent = total;
 }
-document.addEventListener('change', async (ev) => {
+let settingsDebounce = null;
+document.addEventListener('input', (ev) => {
   const key = ev.target.dataset && ev.target.dataset.setting;
   if (!key) return;
-  SETTINGS[key] = ev.target.type === 'number' ? (+ev.target.value || 0) : ev.target.value;
-  await settingsSave();
-  syncSettingFields();
-  renderAll();
+  clearTimeout(settingsDebounce);
+  settingsDebounce = setTimeout(async () => {
+    SETTINGS[key] = ev.target.type === 'number' ? (+ev.target.value || 0) : ev.target.value;
+    await settingsSave();
+    syncSettingFields();
+    renderAll();
+  }, 700);
 });
 
 /* ---------- tab switching ---------- */
@@ -853,22 +592,41 @@ document.getElementById('print-btn').addEventListener('click', () => window.prin
 /* ---------- edit lock ---------- */
 const EDIT_PIN = '012421';
 document.body.classList.add('locked');
+const pinModal = document.getElementById('pin-modal');
+const pinInput = document.getElementById('pin-input');
+const pinError = document.getElementById('pin-error');
+
+function openPinModal() {
+  pinError.textContent = '';
+  pinInput.value = '';
+  pinModal.classList.add('show');
+  pinInput.focus();
+}
+function closePinModal() { pinModal.classList.remove('show'); }
+function tryUnlock() {
+  if (pinInput.value === EDIT_PIN) {
+    document.body.classList.remove('locked');
+    document.getElementById('lock-btn').textContent = '🔓 Lock editing';
+    closePinModal();
+  } else {
+    pinError.textContent = 'Incorrect PIN — try again.';
+    pinInput.value = '';
+    pinInput.focus();
+  }
+}
 document.getElementById('lock-btn').addEventListener('click', () => {
   const btn = document.getElementById('lock-btn');
   if (document.body.classList.contains('locked')) {
-    const entered = window.prompt('Enter PIN to unlock editing:');
-    if (entered === null) return;
-    if (entered === EDIT_PIN) {
-      document.body.classList.remove('locked');
-      btn.textContent = '🔓 Lock editing';
-    } else {
-      window.alert('Incorrect PIN.');
-    }
+    openPinModal();
   } else {
     document.body.classList.add('locked');
     btn.textContent = '🔒 Unlock editing';
   }
 });
+document.getElementById('pin-confirm').addEventListener('click', tryUnlock);
+document.getElementById('pin-cancel').addEventListener('click', closePinModal);
+pinInput.addEventListener('keydown', (ev) => { if (ev.key === 'Enter') tryUnlock(); });
+pinModal.addEventListener('click', (ev) => { if (ev.target === pinModal) closePinModal(); });
 
 /* ================= MORTALITY ================= */
 const MORT_KEY = 'mortality-entries-batch20';
@@ -886,8 +644,7 @@ async function mortLoad() {
   }
 }
 async function mortSave() {
-  try { await storageAPI.set(MORT_KEY, JSON.stringify(mortEntries), true); }
-  catch (e) { document.getElementById('m-status').textContent = 'Could not save — changes may not persist.'; }
+  await saveWithVerify(MORT_KEY, JSON.stringify(mortEntries), 'm-status');
 }
 function mortStats() {
   const BEGIN = { b1: SETTINGS.beginB1, b2: SETTINGS.beginB2, b3: SETTINGS.beginB3 };
@@ -999,8 +756,7 @@ async function feedsLoad() {
   }
 }
 async function feedsSave() {
-  try { await storageAPI.set(FEEDS_KEY, JSON.stringify(feedsEntries), true); }
-  catch (e) { document.getElementById('f-status').textContent = 'Could not save — changes may not persist.'; }
+  await saveWithVerify(FEEDS_KEY, JSON.stringify(feedsEntries), 'f-status');
 }
 function feedsStats() {
   const sorted = [...feedsEntries].sort((a,b) => a.date.localeCompare(b.date));
@@ -1117,8 +873,7 @@ async function alwLoad() {
   }
 }
 async function alwSave() {
-  try { await storageAPI.set(ALW_KEY, JSON.stringify(alwEntries), true); }
-  catch (e) { document.getElementById('a-status').textContent = 'Could not save — changes may not persist.'; }
+  await saveWithVerify(ALW_KEY, JSON.stringify(alwEntries), 'a-status');
 }
 function alwAvg(e) {
   const vals = [e.b1, e.b2, e.b3].filter(v => v !== null && v !== undefined && v !== 0);
@@ -1226,8 +981,7 @@ async function harvestLoad() {
   } catch (e) { harvestEntries = []; }
 }
 async function harvestSave() {
-  try { await storageAPI.set(HARVEST_KEY, JSON.stringify(harvestEntries), true); }
-  catch (e) { document.getElementById('h-status').textContent = 'Could not save — changes may not persist.'; }
+  await saveWithVerify(HARVEST_KEY, JSON.stringify(harvestEntries), 'h-status');
 }
 function harvestStats() {
   const s = { b1:{kilos:0,heads:0}, b2:{kilos:0,heads:0}, b3:{kilos:0,heads:0} };
@@ -1361,6 +1115,5 @@ function renderAll() {
   renderAll();
 })();
 </script>
-
-
-</body></html>
+</body>
+</html>
